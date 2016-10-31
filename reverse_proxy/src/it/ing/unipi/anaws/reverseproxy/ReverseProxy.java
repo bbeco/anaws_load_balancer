@@ -14,10 +14,11 @@ public class ReverseProxy {
 	private static final String urlString = "http://www.ing.unipi.it";
 	private static final String htmlFilePath = "/home/andrea/httpRequest/ContikiRPL.html";
 	
-	public static void findNeighbors(String borderRouter) 
+	public static String[] findNeighbors(String borderRouter) 
 			throws MalformedURLException, IOException, SocketTimeoutException {
 		URL url = new URL(borderRouter);
 		URLConnection connection = url.openConnection();
+		//The following call is executed implicitly by getInputStream
 		//connection.connect();
 		BufferedReader in = new BufferedReader(new InputStreamReader(
 				connection.getInputStream()));
@@ -25,15 +26,22 @@ public class ReverseProxy {
 		StringBuilder builder = new StringBuilder();
 		String response, s;
 		while ((s = in.readLine()) != null) {
-			builder.append(s + "\n");
+			builder.append(s + '\n');
 		}
 		response = builder.toString();
-		System.out.println(response);
+		
+		return parseHtml(response);
 	}
 	
-	private static String[] parseHtml(String html) {
+	protected static String[] parseHtml(String html) {
+		/**
+		 * The following are the strings that come before and after the list 
+		 * of neighbors in the border router response. They are used by this 
+		 * function to locate the nodes list.
+		 */
 		final String startTag = "Neighbors<pre>";
 		final String endTag = "</pre>Routes";
+		
 		ArrayList<String> neighbors = new ArrayList<>();
 		int index = html.indexOf(startTag);
 		if (index < 0) {
