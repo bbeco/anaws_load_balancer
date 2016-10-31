@@ -1,15 +1,18 @@
 package it.ing.unipi.anaws.reverseproxy;
 
 import java.io.BufferedReader;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.MalformedURLException;
 import java.net.SocketTimeoutException;
 import java.net.URL;
 import java.net.URLConnection;
+import java.util.ArrayList;
 
 public class ReverseProxy {
 	private static final String urlString = "http://www.ing.unipi.it";
+	private static final String htmlFilePath = "/home/andrea/httpRequest/ContikiRPL.html";
 	
 	public static void findNeighbors(String borderRouter) 
 			throws MalformedURLException, IOException, SocketTimeoutException {
@@ -27,10 +30,45 @@ public class ReverseProxy {
 		response = builder.toString();
 		System.out.println(response);
 	}
+	
+	private static String[] parseHtml(String html) {
+		final String startTag = "Neighbors<pre>";
+		final String endTag = "</pre>Routes";
+		ArrayList<String> neighbors = new ArrayList<>();
+		int index = html.indexOf(startTag);
+		if (index < 0) {
+			return null;
+		}
+		index += startTag.length();
+		while (!html.substring(index, index + endTag.length()).equals(endTag)) {
+			int endIndex = html.substring(index).indexOf('\n');
+			neighbors.add(html.substring(index, index + endIndex));
+			index += endIndex + 1;
+		}
+		
+		String[] result = new String[neighbors.size()];
+		for (int i = 0; i < result.length; i++) {
+			result[i] = neighbors.get(i);
+		}
+		
+		return result;
+	}
 
 	public static void main(String[] args) {
 		try {
-			findNeighbors(urlString);
+			//findNeighbors(urlString);
+			BufferedReader br = new BufferedReader(
+					new FileReader(htmlFilePath));
+			StringBuilder sb = new StringBuilder();
+			String s;
+			while ((s = br.readLine()) != null) {
+				sb.append(s + '\n');
+			}
+			String[] res = parseHtml(sb.toString());
+			br.close();
+			for (String s1 : res) {
+				System.out.println(s1);
+			}
 		} catch (MalformedURLException e) {
 			System.err.println("Invalid URL string");
 			e.printStackTrace();
