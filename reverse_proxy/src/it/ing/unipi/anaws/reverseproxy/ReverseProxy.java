@@ -14,6 +14,18 @@ public class ReverseProxy {
 	private static final String urlString = "http://www.ing.unipi.it";
 	private static final String htmlFilePath = "/home/andrea/httpRequest/ContikiRPL.html";
 	
+	/**
+	 * This function retrieves the list of border router neighbors.
+	 * It performs an HTTP request to the border router and parse the response.
+	 * 
+	 * @param borderRouter a string with the border router IP address
+	 * @return an array of string containing the mote's IP addresses
+	 * @throws MalformedURLException when the border router IP is misspelled
+	 * @throws IOException when there is a generic error while performing the 
+	 * 		request.
+	 * @throws SocketTimeoutException when the border router does not reply in 
+	 * 		after a timeout has expired.
+	 */
 	public static String[] findNeighbors(String borderRouter) 
 			throws MalformedURLException, IOException, SocketTimeoutException {
 		URL url = new URL(borderRouter);
@@ -33,6 +45,12 @@ public class ReverseProxy {
 		return parseHtml(response);
 	}
 	
+	/**
+	 * This function parse a string in order to find the list of border router 
+	 * neighbors.
+	 * @param html The string to be parsed
+	 * @return an array of string containing the mote's IP addresses
+	 */
 	protected static String[] parseHtml(String html) {
 		/**
 		 * The following are the strings that come before and after the list 
@@ -64,8 +82,8 @@ public class ReverseProxy {
 
 	public static void main(String[] args) {
 		try {
-			//findNeighbors(urlString);
-			BufferedReader br = new BufferedReader(
+			String[] res = findNeighbors(urlString);
+			/*BufferedReader br = new BufferedReader(
 					new FileReader(htmlFilePath));
 			StringBuilder sb = new StringBuilder();
 			String s;
@@ -73,9 +91,11 @@ public class ReverseProxy {
 				sb.append(s + '\n');
 			}
 			String[] res = parseHtml(sb.toString());
-			br.close();
-			for (String s1 : res) {
-				System.out.println(s1);
+			br.close();*/
+			if (res != null) {
+				for (String s1 : res) {
+					System.out.println(s1);
+				}
 			}
 		} catch (MalformedURLException e) {
 			System.err.println("Invalid URL string");
