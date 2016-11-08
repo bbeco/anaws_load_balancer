@@ -1,35 +1,16 @@
 package it.ing.unipi.anaws.resources;
 
 import org.eclipse.californium.core.CoapClient;
-import org.eclipse.californium.core.CoapHandler;
 import org.eclipse.californium.core.CoapResponse;
 import org.eclipse.californium.core.coap.CoAP.ResponseCode;
 
 public class Accelerometer {
 	
-	public String 		acc;
+	public String 		acc;//"" no response
 	CoapClient 			client;
 	String 				myUri;
-	
+	CoapResponse		re;
 
-	CoapHandler ch = new CoapHandler(){  /* GET Handler */
-		@Override
-		public void onLoad(CoapResponse re) 
-		{
-			
-			if (re.getCode() == ResponseCode.CONTENT)
-			{				
-				acc = re.getResponseText();
-			}
-		}
-
-		@Override
-		public void onError() 
-		{
-			System.out.println("Accelerometer GET failed");
-		}
-	};
-	
 	public Accelerometer(String uri)
 	{
 		this.client = new CoapClient();
@@ -39,6 +20,14 @@ public class Accelerometer {
 	
 	public void Get()
 	{
-		client.get(ch);
+		re = client.get();
+		if(re != null){
+			if (re.getCode() == ResponseCode.CONTENT){				
+				acc = re.getResponseText();
+			}
+		}
+		else{
+			acc = ""; //no response received
+		}
 	}
 }

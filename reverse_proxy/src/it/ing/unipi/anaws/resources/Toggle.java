@@ -1,31 +1,15 @@
 package it.ing.unipi.anaws.resources;
 
 import org.eclipse.californium.core.CoapClient;
-import org.eclipse.californium.core.CoapHandler;
 import org.eclipse.californium.core.CoapResponse;
 import org.eclipse.californium.core.coap.MediaTypeRegistry;
 
 public class Toggle {
 	
-	public int 	ok; /* 1 success, -1 failed */
-	CoapClient 	client;
-	String 		myUri;
-	
-
-	CoapHandler ch = new CoapHandler(){  /* PUT/POST Handler */
-		@Override
-		public void onLoad(CoapResponse re) 
-		{
-			ok = 1;
-		}
-
-		@Override
-		public void onError() 
-		{
-			System.out.println("Toggle PUT/POST failed");
-			ok = -1;
-		}
-	};
+	public int 		ok; /* 1 success, -1 no response*/
+	CoapClient 		client;
+	String 			myUri;
+	CoapResponse 	re;
 	
 	public Toggle(String uri)
 	{
@@ -36,11 +20,21 @@ public class Toggle {
 	
 	public void Post()
 	{
-		client.post(ch, "", MediaTypeRegistry.TEXT_PLAIN);
+		//TODO nel caso di re null è possiblile ciclare fino a quando è diversa da null?
+		re = client.post("", MediaTypeRegistry.TEXT_PLAIN);
+		if(re != null)
+			ok = 1;
+		else{
+			ok = -1;
+		}
 	}
 	
 	public void Put()
 	{
-		client.put(ch, "", MediaTypeRegistry.TEXT_PLAIN);
+		client.put("", MediaTypeRegistry.TEXT_PLAIN);
+		if(re != null)
+			ok = 1;
+		else
+			ok = -1;
 	}
 }

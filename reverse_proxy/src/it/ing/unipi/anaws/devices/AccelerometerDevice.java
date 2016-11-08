@@ -13,7 +13,7 @@ public class AccelerometerDevice {
 		battery = new Battery(uri);
 	}
 	
-	public String TempGet()	{
+	public String AccGet()	{
 		acc.Get();
 		return acc.acc;
 	}

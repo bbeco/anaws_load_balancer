@@ -13,12 +13,12 @@ public class ToggleDevice {
 		battery = new Battery(uri);
 	}
 	
-	public int LedsPost()	{
+	public int TogglePost()	{
 		toggle.Post();
 		return toggle.ok;
 	}
 	
-	public int LedsPut()	{
+	public int TogglePut()	{
 		toggle.Put();
 		return toggle.ok;
 	}
