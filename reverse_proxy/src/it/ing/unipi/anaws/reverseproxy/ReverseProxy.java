@@ -85,8 +85,8 @@ public class ReverseProxy {
 
 	public static void main(String[] args) {
 		try {
-			String[] res = findNeighbors(urlString);
-			/*BufferedReader br = new BufferedReader(
+			//String[] res = findNeighbors(urlString);
+			BufferedReader br = new BufferedReader(
 					new FileReader(htmlFilePath));
 			StringBuilder sb = new StringBuilder();
 			String s;
@@ -94,7 +94,7 @@ public class ReverseProxy {
 				sb.append(s + '\n');
 			}
 			String[] res = parseHtml(sb.toString());
-			br.close();*/
+			br.close();
 			if (res != null) {
 				for (String s1 : res) {
 					System.out.println(s1);
