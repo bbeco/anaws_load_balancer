@@ -55,10 +55,12 @@ public class ReverseProxy {
 		/**
 		 * The following are the strings that come before and after the list 
 		 * of neighbors in the border router response. They are used by this 
-		 * function to locate the nodes list.
+		 * function to locate the node list.
 		 */
-		final String startTag = "Neighbors<pre>";
-		final String endTag = "</pre>Routes";
+		final String startTag = "Routes<pre>";
+		final String endTag = "</pre>\n</body>";
+		/** this is the separator between addresses **/
+		final String separator = "/128";
 		
 		ArrayList<String> neighbors = new ArrayList<>();
 		int index = html.indexOf(startTag);
@@ -67,8 +69,9 @@ public class ReverseProxy {
 		}
 		index += startTag.length();
 		while (!html.substring(index, index + endTag.length()).equals(endTag)) {
-			int endIndex = html.substring(index).indexOf('\n');
+			int endIndex = html.substring(index).indexOf(separator);
 			neighbors.add(html.substring(index, index + endIndex));
+			endIndex = html.substring(index).indexOf("\n");
 			index += endIndex + 1;
 		}
 		
