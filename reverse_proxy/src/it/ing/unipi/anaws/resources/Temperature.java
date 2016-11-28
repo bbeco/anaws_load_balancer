@@ -14,7 +14,7 @@ public class Temperature {
 	public Temperature(String uri)
 	{
 		this.client = new CoapClient();
-		myUri = uri + "/temperature";
+		myUri = uri + "/temp";
 		client.setURI(myUri);
 	}
 	

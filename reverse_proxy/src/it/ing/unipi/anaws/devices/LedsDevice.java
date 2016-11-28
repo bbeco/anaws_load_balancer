@@ -1,16 +1,14 @@
 package it.ing.unipi.anaws.devices;
 
-import it.ing.unipi.anaws.resources.Battery;
 import it.ing.unipi.anaws.resources.Leds;
 
-public class LedsDevice {
+public class LedsDevice extends Device {
 	
 	Leds 	led;
-	Battery	battery;
-	
-	public LedsDevice(String uri){
+
+	public LedsDevice(String ID, String uri){
+		super(ID, uri);
 		led = new Leds(uri);
-		battery = new Battery(uri);
 	}
 	
 	public int LedsPost(String color, String mode)	{
@@ -21,10 +19,5 @@ public class LedsDevice {
 	public int LedsPut(String color, String mode)	{
 		led.Put(color, mode);
 		return led.ok;
-	}
-	
-	public String BatteryGet()	{
-		battery.Get();
-		return battery.charge;
 	}
 }

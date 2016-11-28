@@ -14,13 +14,12 @@ public class Toggle {
 	public Toggle(String uri)
 	{
 		this.client = new CoapClient();
-		myUri = uri + "/toggle";
+		myUri = uri + "/togg";
 		client.setURI(myUri);
 	}
 	
 	public void Post()
 	{
-		//TODO nel caso di re null è possiblile ciclare fino a quando è diversa da null?
 		re = client.post("", MediaTypeRegistry.TEXT_PLAIN);
 		if(re != null)
 			ok = 1;

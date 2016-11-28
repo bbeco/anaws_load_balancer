@@ -7,7 +7,7 @@ import org.eclipse.californium.core.coap.CoAP.ResponseCode;
 public class Battery {
 	
 	
-	public String 		charge;//""no response
+	public Integer  	charge;//-1 no response
 	CoapClient 			client;
 	String 				myUri;
 	CoapResponse		re;
@@ -15,7 +15,7 @@ public class Battery {
 	public Battery(String uri)
 	{
 		this.client = new CoapClient();
-		myUri = uri + "/battery";
+		myUri = uri + "/batt";
 		client.setURI(myUri);
 	}
 	
@@ -24,11 +24,11 @@ public class Battery {
 		re = client.get();
 		if(re != null){
 			if (re.getCode() == ResponseCode.CONTENT){				
-				charge = re.getResponseText();
+				charge = Integer.parseInt(re.getResponseText());
 			}
 		}
 		else{
-			charge = "";
+			charge = -1;
 		}
 	}
 }

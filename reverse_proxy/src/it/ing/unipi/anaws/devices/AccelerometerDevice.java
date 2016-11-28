@@ -1,25 +1,20 @@
 package it.ing.unipi.anaws.devices;
 
 import it.ing.unipi.anaws.resources.Accelerometer;
-import it.ing.unipi.anaws.resources.Battery;
 
-public class AccelerometerDevice {
+public class AccelerometerDevice extends Device{
 	
-	Accelerometer 	acc;
-	Battery			battery;
-	
-	public AccelerometerDevice(String uri){
+	public Accelerometer 	acc;
+
+	public AccelerometerDevice(String ID, String uri){
+		super(ID , uri);
 		acc = new Accelerometer(uri);
-		battery = new Battery(uri);
 	}
-	
+			
 	public String AccGet()	{
+		//super.busy = true;
 		acc.Get();
+		//super.busy = false;
 		return acc.acc;
-	}
-	
-	public String BatteryGet()	{
-		battery.Get();
-		return battery.charge;
 	}
 }

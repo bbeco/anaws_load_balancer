@@ -15,7 +15,7 @@ public class Leds {
 	public Leds(String uri)
 	{
 		this.client = new CoapClient();
-		myUri = uri + "/leds";
+		myUri = uri + "/led";
 	}
 	
 	public void Post(String color, String mode)
