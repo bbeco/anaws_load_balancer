@@ -15,6 +15,7 @@ import org.eclipse.californium.core.CoapServer;
 import org.eclipse.californium.core.coap.CoAP.ResponseCode;
 import org.eclipse.californium.core.network.CoapEndpoint;
 import org.eclipse.californium.core.network.EndpointManager;
+import org.eclipse.californium.core.network.Exchange;
 import org.eclipse.californium.core.network.config.NetworkConfig;
 import org.eclipse.californium.core.server.resources.CoapExchange;
 import org.eclipse.californium.core.server.resources.ConcurrentCoapResource;
@@ -270,74 +271,77 @@ public class ExampleReverseProxy extends CoapServer {
             getAttributes().setTitle("Accelerometer Resource");
         }
 
-      
         @Override
-        public void handleGET(CoapExchange exchange) {
-            
-            //send ack to the client
-        	exchange.accept();//TODO check what is the behavior of the client when receive this 
+    	public void handleRequest(final Exchange exchange) {
+        	
+        	System.out.println("Served by thread : " + Thread.currentThread().getName());
+        	
+        	exchange.sendAccept();
         	
         	synchronized(this){
-        		System.out.println("Served by thread : " + Thread.currentThread().getName());
-        		
-        		int i;
-        		
-        		//accelerometer requests cycle is over
-        		if(tot_acc_req == acc_cycle){
-        			System.out.println("Cycle is over");
-        			checkBatteryStatus(acc_dev);
-        			orderDevices(acc_dev, acc_req);
-        			acc_cycle = computeCycle(acc_req);
-        			//System.out.println("Acc cycle : " + acc_cycle);
-        			tot_acc_req = 0;
-        		}
+        		super.handleRequest(exchange);
+        	}
+    	}
+        
+        @Override
+        public void handleGET(CoapExchange exchange) {
 
-        		/* Choose the server to whom send the request
-        		 * It is chosen the first one in the ordered list (ordered 
-        		 * in a decreasing percentage of battery) that is not busy
-        		 * and has still remaining request in this cycle
-        		 */
-        		for(i = 0; i < acc_dev.size(); i++){//TODO add busy control
-        			if(acc_req.get(i) != 0){
-        				if(acc_dev.get(i).busy){
-        					System.out.println("Server id " + acc_dev.get(i).ID + " : Server busy");
-        					continue;
-        				}
-        				acc_req.set(i, acc_req.get(i) - 1);
-        				System.out.println("--- DEVICE SELECTION ---");
-        				System.out.println("Number of total requests : " + (tot_acc_req + 1));
-        				System.out.println("Device selected : " + i);
-        				System.out.println("Server id : " + acc_dev.get(i).ID );
-        				System.out.print("Remaining requests :	");
-        				for(int aux : acc_req){
-        					System.out.print(aux);
-        					System.out.print("	");
-        				}
-        				System.out.println("");
-        				tot_acc_req++;
-        				break;
+        	int i;
+
+        	//accelerometer requests cycle is over
+        	if(tot_acc_req == acc_cycle){
+        		System.out.println("Cycle is over");
+        		checkBatteryStatus(acc_dev);
+        		orderDevices(acc_dev, acc_req);
+        		acc_cycle = computeCycle(acc_req);
+        		//System.out.println("Acc cycle : " + acc_cycle);
+        		tot_acc_req = 0;
+        	}
+
+        	/* Choose the server to whom send the request
+        	 * It is chosen the first one in the ordered list (ordered 
+        	 * in a decreasing percentage of battery) that is not busy
+        	 * and has still remaining request in this cycle
+        	 */
+        	for(i = 0; i < acc_dev.size(); i++){//TODO add busy control
+        		if(acc_req.get(i) != 0){
+        			/*
+        			if(acc_dev.get(i).busy){
+        				System.out.println("Server id " + acc_dev.get(i).ID + " : Server busy");
+        				continue;
         			}
+        			*///TODO check if can be deleted
+        			acc_req.set(i, acc_req.get(i) - 1);
+        			System.out.println("--- DEVICE SELECTION ---");
+        			System.out.println("Number of total requests : " + (tot_acc_req + 1));
+        			System.out.println("Device selected : " + i);
+        			System.out.println("Server id : " + acc_dev.get(i).ID );
+        			System.out.print("Remaining requests :	");
+        			for(int aux : acc_req){
+        				System.out.print(aux);
+        				System.out.print("	");
+        			}
+        			System.out.println("");
+        			tot_acc_req++;
+        			break;
         		}
+        	}
 
-        		//there are no available devices
-        		if((acc_dev.size() == 0) || (i == acc_dev.size())){//TODO remove second part and handle the all busy servers situation
-        			System.out.println("No servers available");
-        			exchange.respond("Impossible to handle requests : No servers available");
-        			return;
-        		}
+        	//there are no available devices
+        	if((acc_dev.size() == 0)){
+        		System.out.println("No servers available");
+        		exchange.respond("Impossible to handle requests : No servers available");
+        		return;
+        	}
 
-        		//get can be executed by more threads at time
-        		acc_dev.get(i).busy = true;//TODO busy inutile se si sincronizza tutto
-        		String res = acc_dev.get(i).AccGet();
-        		acc_dev.get(i).busy = false;
-        		if(!res.equals("")){
-        			// respond to the request
-        			exchange.respond(res);
-        		}
-        		else{
-        			//System.out.println("Server id " + acc_dev.get(i).ID + " : Gateway timeout");
-        			exchange.respond(ResponseCode.GATEWAY_TIMEOUT);
-        		}
+        	String res = acc_dev.get(i).AccGet();
+        	if(!res.equals("")){
+        		// respond to the request
+        		exchange.respond(res);
+        	}
+        	else{
+        		//System.out.println("Server id " + acc_dev.get(i).ID + " : Gateway timeout");
+        		exchange.respond(ResponseCode.GATEWAY_TIMEOUT);
         	}
         }
     }
