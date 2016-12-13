@@ -6,11 +6,14 @@ public class Device{
 	
 	public Battery	battery;
 	public String 	ID; //IPV6 address
-	public boolean 	busy;
+	
+	/* counter for request */
+	public int		req;
 	
 	public Device (String ID, String uri){
 		battery = new Battery(uri);
 		this.ID = ID;
+		req = 0;
 	}
 	
 	public int BatteryGet()	{
