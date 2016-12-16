@@ -5,7 +5,6 @@ import java.util.ArrayList;
 import org.eclipse.californium.core.coap.CoAP.ResponseCode;
 import org.eclipse.californium.core.server.resources.CoapExchange;
 import it.ing.unipi.anaws.devices.AccelerometerDevice;
-import it.ing.unipi.anaws.devices.Device;
 
 /*
  * Definition of the Accelerometer Resource
@@ -22,6 +21,10 @@ public class VirtualAccelerometer extends VirtualResource<AccelerometerDevice> {
     @Override
     public void handleGET(CoapExchange exchange) {
     	AccelerometerDevice acc_dev = (AccelerometerDevice) chooseDevice();
+    	if(acc_dev == null){
+    		exchange.respond(ResponseCode.SERVICE_UNAVAILABLE);
+    		return;
+    	}
     	String res = acc_dev.AccGet();
     	if(!res.equals("")){
     		// respond to the request

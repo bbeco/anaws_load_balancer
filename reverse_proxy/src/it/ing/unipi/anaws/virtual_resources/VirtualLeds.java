@@ -5,7 +5,6 @@ import java.util.ArrayList;
 import org.eclipse.californium.core.coap.CoAP.ResponseCode;
 import org.eclipse.californium.core.server.resources.CoapExchange;
 
-import it.ing.unipi.anaws.devices.Device;
 import it.ing.unipi.anaws.devices.LedsDevice;
 
 /*
@@ -24,8 +23,12 @@ public class VirtualLeds extends VirtualResource<LedsDevice> {
     	
         String opt = exchange.getRequestText();
     	String [] aux = opt.split(",");
-
+    	System.out.println(aux[0]+" "+aux[1]);
     	LedsDevice led_dev = (LedsDevice) chooseDevice();
+    	if(led_dev == null){
+    		exchange.respond(ResponseCode.SERVICE_UNAVAILABLE);
+    		return;
+    	}
     	int tmp = led_dev.LedsPost(aux[0],aux[1]);
     	
     	if(tmp == 1){
@@ -46,6 +49,10 @@ public class VirtualLeds extends VirtualResource<LedsDevice> {
     	String [] aux = opt.split(",");
     	
     	LedsDevice led_dev = (LedsDevice) chooseDevice();
+    	if(led_dev == null){
+    		exchange.respond(ResponseCode.SERVICE_UNAVAILABLE);
+    		return;
+    	}
       	int tmp = led_dev.LedsPut(aux[0],aux[1]);
       	if(tmp == 1){
     		exchange.respond(ResponseCode.CHANGED);

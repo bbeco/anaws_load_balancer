@@ -4,25 +4,13 @@ import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.SocketException;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.Vector;
-
 import org.eclipse.californium.core.CoapClient;
-import org.eclipse.californium.core.CoapResource;
 import org.eclipse.californium.core.CoapResponse;
 import org.eclipse.californium.core.CoapServer;
-import org.eclipse.californium.core.coap.CoAP.ResponseCode;
 import org.eclipse.californium.core.network.CoapEndpoint;
 import org.eclipse.californium.core.network.EndpointManager;
-import org.eclipse.californium.core.network.Exchange;
 import org.eclipse.californium.core.network.config.NetworkConfig;
-import org.eclipse.californium.core.server.resources.CoapExchange;
-import org.eclipse.californium.core.server.resources.ConcurrentCoapResource;
-
 import it.ing.unipi.anaws.devices.AccelerometerDevice;
-import it.ing.unipi.anaws.devices.Device;
-import it.ing.unipi.anaws.devices.DeviceComparatorByCharge;
 import it.ing.unipi.anaws.devices.LedsDevice;
 import it.ing.unipi.anaws.devices.TemperatureDevice;
 import it.ing.unipi.anaws.devices.ToggleDevice;
@@ -78,13 +66,13 @@ public class ExampleReverseProxy extends CoapServer {
             addr.add("coap://[aaaa::c30c:0:0:2]:5683");
             addr.add("coap://[aaaa::c30c:0:0:3]:5683");
             addr.add("coap://[aaaa::c30c:0:0:4]:5683");
-            addr.add("coap://[aaaa::c30c:0:0:9]:5683");
-            /*
+         /*   addr.add("coap://[aaaa::c30c:0:0:9]:5683");
+            
             addr.add("coap://[aaaa::c30c:0:0:5]:5683");
             addr.add("coap://[aaaa::c30c:0:0:6]:5683");
             addr.add("coap://[aaaa::c30c:0:0:7]:5683");
             addr.add("coap://[aaaa::c30c:0:0:8]:5683");
-            
+            /*
             addr.add("coap://[aaaa::c30c:0:0:a]:5683");
             addr.add("coap://[aaaa::c30c:0:0:b]:5683");
             addr.add("coap://[aaaa::c30c:0:0:c]:5683");

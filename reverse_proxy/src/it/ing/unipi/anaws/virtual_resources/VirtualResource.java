@@ -54,7 +54,11 @@ public abstract class VirtualResource<T extends Device> extends ConcurrentCoapRe
     	System.out.println("--- SETTING PARAMETERS ---");
     	System.out.print("Remaining requests :	");
     	for(int i = 0; i < dev_list.size(); i++){
-    		dev_list.get(i).req = dev_list.get(i).battery.charge/10;
+    		if(dev_list.get(i).battery.charge>10){
+    			dev_list.get(i).req = dev_list.get(i).battery.charge/10;
+    		} else {
+    			dev_list.get(i).req = dev_list.get(i).battery.charge;
+    		}
     		System.out.print(dev_list.get(i).req + "\t");
     		
     	}
@@ -66,6 +70,8 @@ public abstract class VirtualResource<T extends Device> extends ConcurrentCoapRe
     	
     	//System.out.println("Served by thread : " + Thread.currentThread().getName());
     	
+    	//XXX accettiamo richieste che non siamo sicuri di soddisfare in futuro
+    	//aggiungi controllo in fase di handle
     	exchange.sendAccept();
     	
     	synchronized(this){
@@ -79,7 +85,7 @@ public abstract class VirtualResource<T extends Device> extends ConcurrentCoapRe
         computeCycle();
     }
     
-    private <T extends Device> void checkBatteryStatus() {
+    private void checkBatteryStatus() {
     	//TODO is possible that a server is busy, handle this situation??
     	Iterator<T> iter = (Iterator<T>) dev_list.iterator();
     	while(iter.hasNext()) {
@@ -89,7 +95,9 @@ public abstract class VirtualResource<T extends Device> extends ConcurrentCoapRe
     		while((charge == -1) && (maxTry > 0)){
     			maxTry--;
     			charge = dev.BatteryGet();
+    			
   		 	}
+    		System.out.println("Battery Status:"+charge+" max try:"+maxTry);
     		if((charge == -1) && maxTry == 0){//assume that the device is disconnected
     			System.out.println("Server id " + dev.ID + " : Impossible to get charge, Server Disconnetted");
     			iter.remove();//remove current device from the list

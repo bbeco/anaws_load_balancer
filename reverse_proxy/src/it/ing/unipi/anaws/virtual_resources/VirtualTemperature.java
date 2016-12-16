@@ -3,11 +3,7 @@ package it.ing.unipi.anaws.virtual_resources;
 import java.util.ArrayList;
 
 import org.eclipse.californium.core.coap.CoAP.ResponseCode;
-import org.eclipse.californium.core.network.Exchange;
 import org.eclipse.californium.core.server.resources.CoapExchange;
-import org.eclipse.californium.core.server.resources.ConcurrentCoapResource;
-
-import it.ing.unipi.anaws.devices.Device;
 import it.ing.unipi.anaws.devices.TemperatureDevice;
 
 /*
@@ -23,6 +19,10 @@ public class VirtualTemperature extends VirtualResource<TemperatureDevice> {
     @Override
     public void handleGET(CoapExchange exchange) {
     	TemperatureDevice temp_dev = (TemperatureDevice) chooseDevice();
+    	if(temp_dev == null){
+    		exchange.respond(ResponseCode.SERVICE_UNAVAILABLE);
+    		return;
+    	}
     	String res = temp_dev.TempGet();
     	if(!res.equals("")) {
     		// respond to the request

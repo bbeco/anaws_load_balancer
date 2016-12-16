@@ -18,6 +18,7 @@ public class Device{
 	
 	public int BatteryGet()	{
 		battery.Get();
+		
 		return battery.charge;
 	}
 }
