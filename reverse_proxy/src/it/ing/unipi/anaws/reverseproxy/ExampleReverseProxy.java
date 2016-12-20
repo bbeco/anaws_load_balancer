@@ -1,8 +1,15 @@
 package it.ing.unipi.anaws.reverseproxy;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
+import java.net.MalformedURLException;
 import java.net.SocketException;
+import java.net.SocketTimeoutException;
+import java.net.URL;
+import java.net.URLConnection;
 import java.util.ArrayList;
 import org.eclipse.californium.core.CoapClient;
 import org.eclipse.californium.core.CoapResponse;
@@ -36,7 +43,7 @@ public class ExampleReverseProxy extends CoapServer {
 	VirtualLeds led_res;
 	
 	//addresses
-	public static ArrayList<String> addr;
+	public static String[] addr;
 	
     /*
      * Application entry point.
@@ -52,7 +59,8 @@ public class ExampleReverseProxy extends CoapServer {
         	led_dev = new ArrayList<LedsDevice>();
         	
         	//create list of addresses
-        	addr = new ArrayList<String>();
+        	//addr = new ArrayList<String>();
+        	addr = findNeighbors("http://[fd00::c30c:0:0:1]");
         	
             
             
@@ -63,20 +71,20 @@ public class ExampleReverseProxy extends CoapServer {
             */
             
             /* add addresses in a static manner */
-            addr.add("coap://[fd00::c30c:0:0:2]:5683");
+            /*addr.add("coap://[fd00::c30c:0:0:2]:5683");
             addr.add("coap://[fd00::c30c:0:0:3]:5683");
             addr.add("coap://[fd00::c30c:0:0:4]:5683");
-         /*   addr.add("coap://[aaaa::c30c:0:0:9]:5683");
+            addr.add("coap://[fd00::c30c:0:0:9]:5683");
             
-            addr.add("coap://[aaaa::c30c:0:0:5]:5683");
-            addr.add("coap://[aaaa::c30c:0:0:6]:5683");
-            addr.add("coap://[aaaa::c30c:0:0:7]:5683");
-            addr.add("coap://[aaaa::c30c:0:0:8]:5683");
-            /*
+            addr.add("coap://[fd00::c30c:0:0:5]:5683");
+            addr.add("coap://[fd00::c30c:0:0:6]:5683");
+            addr.add("coap://[fd00::c30c:0:0:7]:5683");
+            addr.add("coap://[fd00::c30c:0:0:8]:5683");
+            
             addr.add("coap://[aaaa::c30c:0:0:a]:5683");
             addr.add("coap://[aaaa::c30c:0:0:b]:5683");
             addr.add("coap://[aaaa::c30c:0:0:c]:5683");
-            addr.add("coap://[aaaa::c30c:0:0:d]:5683");
+            /*addr.add("coap://[aaaa::c30c:0:0:d]:5683");
             */
             discoverResources();
             
@@ -101,7 +109,16 @@ public class ExampleReverseProxy extends CoapServer {
             
         } catch (SocketException e) {
             System.err.println("Failed to initialize server: " + e.getMessage());
-        }
+        } catch (SocketTimeoutException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (MalformedURLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
     }
     
     private static void addMotes(String s, String addr){
@@ -185,12 +202,77 @@ public class ExampleReverseProxy extends CoapServer {
         add(tog_res);
         add(led_res);
     }
+    
+    /**
+	 * This function retrieves the list of border router neighbors.
+	 * It performs an HTTP request to the border router and parse the response.
+	 * 
+	 * @param borderRouter a string with the border router IP address
+	 * @return an array of string containing the mote's IP addresses
+	 * @throws MalformedURLException when the border router IP is misspelled
+	 * @throws IOException when there is a generic error while performing the 
+	 * 		request.
+	 * @throws SocketTimeoutException when the border router does not reply in 
+	 * 		after a timeout has expired.
+	 */
+	public static String[] findNeighbors(String borderRouter) 
+			throws MalformedURLException, IOException, SocketTimeoutException {
+		URL url = new URL(borderRouter);
+		URLConnection connection = url.openConnection();
+		//The following call is executed implicitly by getInputStream
+		//connection.connect();
+		BufferedReader in = new BufferedReader(new InputStreamReader(
+				connection.getInputStream()));
+		
+		StringBuilder builder = new StringBuilder();
+		String response, s;
+		while ((s = in.readLine()) != null) {
+			builder.append(s + '\n');
+		}
+		response = builder.toString();
+		
+		return parseHtml(response);
+	}
 
-    
-    
-    
-    
-    
-    
+    /**
+	 * This function parse a string in order to find the list of border router 
+	 * neighbors.
+	 * @param html The string to be parsed
+	 * @return an array of string containing the mote's IP addresses
+	 */
+	protected static String[] parseHtml(String html) {
+		/**
+		 * The following are the strings that come before and after the list 
+		 * of neighbors in the border router response. They are used by this 
+		 * function to locate the node list.
+		 */
+		final String startTag = "Routes<pre>\n";
+		final String endTag = "</pre></body>";
+		/** this is the separator between addresses **/
+		final String separator = "/128";
+		
+		ArrayList<String> neighbors = new ArrayList<>();
+		int index = html.indexOf(startTag);
+		if (index < 0) {
+			return null;
+		}
+		index += startTag.length();
+		while (!html.substring(index, index + endTag.length()).equals(endTag)) {
+			int endIndex = html.substring(index).indexOf(separator);
+			neighbors.add("coap://[" + html.substring(index, index + endIndex) + "]:5683");
+			endIndex = html.substring(index).indexOf("\n");
+			index += endIndex + 1;
+		}
+		
+		String[] result = new String[neighbors.size()];
+		for (int i = 0; i < result.length; i++) {
+			result[i] = neighbors.get(i);
+		}
+		
+		for (String a : result) {
+			System.out.println(a);
+		}
+		return result;
+	}
     
 }

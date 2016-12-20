@@ -3,6 +3,9 @@ package it.ing.unipi.anaws.virtual_resources;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
+import java.util.Timer;
+import java.util.TimerTask;
+
 import org.eclipse.californium.core.network.Exchange;
 import org.eclipse.californium.core.server.resources.ConcurrentCoapResource;
 
@@ -22,6 +25,18 @@ public abstract class VirtualResource<T extends Device> extends ConcurrentCoapRe
   	//total number of possible requests that devices can handle in a cycle
   	private int cycle;
     
+  	private Timer mTimer;
+  	private BatteryTimer mTimerTask;
+  	
+  	private class BatteryTimer extends TimerTask {
+
+		@Override
+		public void run() {
+			init();
+		}
+  		
+  	}
+  	
     public VirtualResource(String name, String title, ArrayList<T> devs) {
         
         // set resource identifier, set pool of threads
@@ -33,6 +48,9 @@ public abstract class VirtualResource<T extends Device> extends ConcurrentCoapRe
         dev_list = devs;
         tot_req = 0;
         cycle = 0;
+        
+        mTimer = new Timer(true);
+        mTimerTask = new BatteryTimer();
     }
     
     private void orderDevices() {
@@ -81,14 +99,19 @@ public abstract class VirtualResource<T extends Device> extends ConcurrentCoapRe
     	}
 	}
     
-    public void init() {
+    public synchronized void init() {
     	checkBatteryStatus();
         orderDevices();
         computeCycle();
+        tot_req = 0;
     }
     
     private void checkBatteryStatus() {
-    	//TODO is possible that a server is busy, handle this situation??
+    	
+    	mTimerTask.cancel();
+    	mTimerTask = new BatteryTimer();
+    	mTimer.schedule(mTimerTask, 4*60*60*1000); //4 hours
+    	
     	Iterator<T> iter = (Iterator<T>) dev_list.iterator();
     	while(iter.hasNext()) {
     		Device dev = iter.next();
@@ -128,11 +151,7 @@ public abstract class VirtualResource<T extends Device> extends ConcurrentCoapRe
     	}
     	if(tot_req == cycle){
     		System.out.println("Cycle is over");
-    		checkBatteryStatus();
-    		orderDevices();
-    		computeCycle();
-    		//System.out.println("cycle : " + cycle);
-    		tot_req = 0;
+    		init();
     	}
 
     	/* Choose the server to whom send the request

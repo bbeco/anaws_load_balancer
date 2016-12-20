@@ -18,7 +18,10 @@
 #define PRINTLLADDR(addr)
 #endif
 
-int battery_charge = 100;
+#define BATTERY_DRAIN 0.1
+#define TIME_DRAIN 500
+
+float battery_charge = 100;
 int requests = 0;
 unsigned long last_battery_request = 0;
 
@@ -33,8 +36,18 @@ leds_handler(void* request, void* response, uint8_t *buffer, uint16_t preferred_
 
   requests++;
 
+  unsigned long request_time = clock_seconds();
+  float aux = request_time;
+  aux -= (float)last_battery_request;
+  last_battery_request = request_time;
+
+  srand(RTIMER_NOW());
+  int r = abs(rand() % 5);
+  battery_charge -= aux/TIME_DRAIN + r + 1; 
+
   if ((len=REST.get_query_variable(request, "color", &color))) {
-    PRINTF("color %.*s\n", len, color);
+    //PRINTF("color %.*s\n", len, color);
+PRINTF("r: %d\n", r);
 
     if (strncmp(color, "r", len)==0) {
       led = LEDS_RED;
@@ -75,36 +88,39 @@ battery_handler(void *request, void *response, uint8_t *buffer, uint16_t preferr
   char message[40];
 
   unsigned long request_time = clock_seconds();
-  unsigned long aux = request_time;
-  aux -= last_battery_request;
+  float aux = request_time;
+  aux -= (float)last_battery_request;
   last_battery_request = request_time;
 
+  
+  //PRINTF("request time: %lu\n", request_time);
+  
+PRINTF("requests: %d\n", requests);
+PRINTF("aux: %f\n", aux);
+  //PRINTF("aux3600: %lu\n", aux/180);
+  //PRINTF("aux36: %lu\n", aux/360);
+  //PRINTF("last request: %lu\n", last_battery_request);
+  //PRINTF("leds: %d\n", leds_requests);
   /*
-  PRINTF("request time: %lu\n", request_time);
-  PRINTF("aux: %lu\n", aux);
-  PRINTF("aux3600: %lu\n", aux/180);
-  PRINTF("aux36: %lu\n", aux/360);
-  PRINTF("last request: %lu\n", last_battery_request);
-  PRINTF("leds: %d\n", leds_requests);
   PRINTF("toggle: %d\n", toggle_requests);
   PRINTF("temperature: %d\n", temperature_requests);
   PRINTF("accelerometer: %d\n", accelerometer_requests);
   */
-
-  srand(request_time);
-  int r = abs((rand () % 5));//non so perch+ ma rand torna un numero negativo (farà overflow ma non capisco pechè)
   
   /*
   PRINTF("random: %d\n", r);
   */
 
-  battery_charge -= aux/360 + (requests * (r + 1));
+  battery_charge -= aux/TIME_DRAIN + BATTERY_DRAIN;
+
+PRINTF("battery charge: %d\n", (int)battery_charge);
+
   if(battery_charge < 0)
 	battery_charge = 0;
 
-  requests = 0;
+  requests = 0; //XXX debug purpose
   
-  sprintf(message, "%d", battery_charge);
+  sprintf(message, "%d", (int)battery_charge);
   length = strlen(message);
   memcpy(buffer, message, length);
 
