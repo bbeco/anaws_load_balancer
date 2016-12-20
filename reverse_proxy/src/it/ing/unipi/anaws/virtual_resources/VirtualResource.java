@@ -35,7 +35,7 @@ public abstract class VirtualResource<T extends Device> extends ConcurrentCoapRe
         cycle = 0;
     }
     
-    private <T extends Device> void orderDevices() {
+    private void orderDevices() {
     	
     	/*
     	System.out.println("--- INITIAL ORDER ---");
@@ -50,7 +50,9 @@ public abstract class VirtualResource<T extends Device> extends ConcurrentCoapRe
     	for(T device : devices)
     		System.out.println(device.ID);
     	*/
-    	
+    	if(dev_list.size() == 0){
+    		return;
+    	}
     	System.out.println("--- SETTING PARAMETERS ---");
     	System.out.print("Remaining requests :	");
     	for(int i = 0; i < dev_list.size(); i++){
@@ -99,7 +101,7 @@ public abstract class VirtualResource<T extends Device> extends ConcurrentCoapRe
   		 	}
     		System.out.println("Battery Status:"+charge+" max try:"+maxTry);
     		if((charge == -1) && maxTry == 0){//assume that the device is disconnected
-    			System.out.println("Server id " + dev.ID + " : Impossible to get charge, Server Disconnetted");
+    			System.out.println("Server id " + dev.ID + " : Impossible to get charge, Server Disconnected");
     			iter.remove();//remove current device from the list
     		}
     		if(charge == 0){
@@ -120,7 +122,10 @@ public abstract class VirtualResource<T extends Device> extends ConcurrentCoapRe
     protected Device chooseDevice() {
     	int i;
 
-    	//accelerometer requests cycle is over
+    	//requests cycle is over
+    	if(cycle == 0){
+    		return null;
+    	}
     	if(tot_req == cycle){
     		System.out.println("Cycle is over");
     		checkBatteryStatus();

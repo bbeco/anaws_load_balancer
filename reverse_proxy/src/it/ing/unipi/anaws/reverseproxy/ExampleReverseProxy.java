@@ -63,9 +63,9 @@ public class ExampleReverseProxy extends CoapServer {
             */
             
             /* add addresses in a static manner */
-            addr.add("coap://[aaaa::c30c:0:0:2]:5683");
-            addr.add("coap://[aaaa::c30c:0:0:3]:5683");
-            addr.add("coap://[aaaa::c30c:0:0:4]:5683");
+            addr.add("coap://[fd00::c30c:0:0:2]:5683");
+            addr.add("coap://[fd00::c30c:0:0:3]:5683");
+            addr.add("coap://[fd00::c30c:0:0:4]:5683");
          /*   addr.add("coap://[aaaa::c30c:0:0:9]:5683");
             
             addr.add("coap://[aaaa::c30c:0:0:5]:5683");

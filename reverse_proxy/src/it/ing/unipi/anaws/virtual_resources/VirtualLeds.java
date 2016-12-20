@@ -23,7 +23,7 @@ public class VirtualLeds extends VirtualResource<LedsDevice> {
     	
         String opt = exchange.getRequestText();
     	String [] aux = opt.split(",");
-    	System.out.println(aux[0]+" "+aux[1]);
+    	//System.out.println(aux[0]+" "+aux[1]);
     	LedsDevice led_dev = (LedsDevice) chooseDevice();
     	if(led_dev == null){
     		exchange.respond(ResponseCode.SERVICE_UNAVAILABLE);
