@@ -1,4 +1,4 @@
-package it.ing.unipi.anaws.coapclient;
+package it.ing.unipi.anaws.reverseproxy;
 
 import java.util.Random;
 
@@ -6,10 +6,7 @@ import org.eclipse.californium.core.CoapClient;
 import org.eclipse.californium.core.CoapHandler;
 import org.eclipse.californium.core.CoapResponse;
 import org.eclipse.californium.core.Utils;
-import org.eclipse.californium.core.coap.CoAP.ResponseCode;
 import org.eclipse.californium.core.coap.MediaTypeRegistry;
-
-import com.sun.org.apache.xerces.internal.impl.xpath.regex.ParseException;
 
 public class ReverseProxyTester {
 	
@@ -50,7 +47,8 @@ public class ReverseProxyTester {
 		
 		for (int i = 0; i < REQUESTS_NUMBER; i++){
 				
-			whichRequest = 1;
+			//whichRequest = rand.nextInt(10)+1;
+			whichRequest = 5;
 				
 			switch(whichRequest){
 				
