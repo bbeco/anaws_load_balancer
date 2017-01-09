@@ -45,71 +45,64 @@ public class ReverseProxyTester {
 		
 		int counter = 0;
 		
-		for (int i = 0; i < REQUESTS_NUMBER; i++){
+		for (int i = 0; i < REQUESTS_NUMBER; i++) {
 				
-			//whichRequest = rand.nextInt(10)+1;
-			whichRequest = 5;
+			whichRequest = rand.nextInt(4)+1;
 				
-			switch(whichRequest){
+			switch(whichRequest) {
 				
-				//get accelerometer
-				case 1: System.out.println("GET ACCELEROMETER " + counter++ + "\n");
-						client.setURI("coap://[::1]:5683/accelerometer");
-						client.get(ch);
+				//accelerometer
+				case 1:
+					System.out.println("GET ACCELEROMETER " + counter++ + "\n");
+					client.setURI("coap://[::1]:5683/accelerometer");
+					client.get(ch);
 				break;
 					
-				//get temperature
-				case 2: System.out.println("GET TEMPERATURE\n");
-						client.setURI("coap://[::1]:5683/temperature");
-						client.get(ch);
+				//temperature
+				case 2:
+					System.out.println("GET TEMPERATURE\n");
+					client.setURI("coap://[::1]:5683/temperature");
+					client.get(ch);
 				break;
 
-				//post toggle
-				case 3: System.out.println("POST TOGGLE\n");
+				//toggle
+				case 3:
+					if (rand.nextInt(2) == 0) {
+						System.out.println("POST TOGGLE\n");
 						client.setURI("coap://[::1]:5683/toggle");
 						client.post(ch , "" , MediaTypeRegistry.TEXT_PLAIN);
-				break;
-
-				//put toggle
-				case 4: System.out.println("PUT TOGGLE\n");
+					} else {
+						System.out.println("PUT TOGGLE\n");
 						client.setURI("coap://[::1]:5683/toggle");
 						client.put(ch, "" , MediaTypeRegistry.TEXT_PLAIN);
+					}
 				break;
 
-				//post leds r on
-				case 5: System.out.println("POST LEDS (r, on)\n");
+				//leds
+				case 4: 
+					String mode = (rand.nextInt(2) == 0) ? "off" : "on";
+					String color = "";
+					switch(rand.nextInt(3)) {
+					case 0:
+						color = "r";
+						break;
+					case 1:
+						color = "g";
+						break;
+					case 2:
+						color = "b";
+						break;
+					}
+					if (rand.nextInt(2) == 0) {
+						System.out.println("POST LEDS (" + color + ", " + mode + ")\n");
 						client.setURI("coap://[::1]:5683/leds");
-						client.post(ch, "r,on" , MediaTypeRegistry.TEXT_PLAIN);
-				break;
-
-				//post leds r off
-				case 6: System.out.println("POST LEDS (r, off)\n");
+						client.post(ch, color + "," + mode , MediaTypeRegistry.TEXT_PLAIN);
+					} else {
+						System.out.println("PUT LEDS (" + color + ", " + mode + ")\n");
 						client.setURI("coap://[::1]:5683/leds");
-						client.post(ch, "r,off" , MediaTypeRegistry.TEXT_PLAIN);
-				break;
-
-				//put leds g on
-				case 7: System.out.println("PUT LEDS (g, on)\n");
-						client.setURI("coap://[::1]:5683/leds");
-						client.put(ch, "g,on" , MediaTypeRegistry.TEXT_PLAIN);
-				break;
-					
-				//put leds g off
-				case 8: System.out.println("PUT LEDS (g, off)\n");
-						client.setURI("coap://[::1]:5683/leds");
-						client.put(ch, "g,off" , MediaTypeRegistry.TEXT_PLAIN);
-				break;
-
-				//post leds b on
-				case 9: System.out.println("POST LEDS (b, on)\n");
-						client.setURI("coap://[::1]:5683/leds");
-						client.post(ch, "b,on" , MediaTypeRegistry.TEXT_PLAIN);	
-				break;
-
-				//post leds b off
-				case 10:System.out.println("POST LEDS (b, off)\n");
-						client.setURI("coap://[::1]:5683/leds");
-						client.post(ch, "b,off" , MediaTypeRegistry.TEXT_PLAIN);
+						client.put(ch, color + "," + mode , MediaTypeRegistry.TEXT_PLAIN);
+						
+					}
 			}
 		}
 	

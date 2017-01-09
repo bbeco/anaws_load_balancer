@@ -6,12 +6,12 @@ import java.io.InputStreamReader;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.MalformedURLException;
-import java.net.SocketException;
 import java.net.SocketTimeoutException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.ArrayList;
 import org.eclipse.californium.core.CoapClient;
+import org.eclipse.californium.core.CoapResource;
 import org.eclipse.californium.core.CoapResponse;
 import org.eclipse.californium.core.CoapServer;
 import org.eclipse.californium.core.network.CoapEndpoint;
@@ -45,9 +45,6 @@ public class ExampleReverseProxy extends CoapServer {
 	//addresses
 	public static String[] addr;
 	
-    /*
-     * Application entry point.
-     */
     public static void main(String[] args) {
         
         try {
@@ -58,69 +55,57 @@ public class ExampleReverseProxy extends CoapServer {
         	tog_dev = new ArrayList<ToggleDevice>();
         	led_dev = new ArrayList<LedsDevice>();
         	
-        	//create list of addresses
-        	//addr = new ArrayList<String>();
+        	/*
+        	 * ADDRESSING PHASE
+        	 * creating list of addresses
+        	 */
         	addr = findNeighbors("http://[fd00::c30c:0:0:1]");
         	
             
             
             
-            /*  ADDRESSING PHASE 
-                 
-                 Find address of servers
-            */
-            
-            /* add addresses in a static manner */
-            /*addr.add("coap://[fd00::c30c:0:0:2]:5683");
-            addr.add("coap://[fd00::c30c:0:0:3]:5683");
-            addr.add("coap://[fd00::c30c:0:0:4]:5683");
-            addr.add("coap://[fd00::c30c:0:0:9]:5683");
-            
-            addr.add("coap://[fd00::c30c:0:0:5]:5683");
-            addr.add("coap://[fd00::c30c:0:0:6]:5683");
-            addr.add("coap://[fd00::c30c:0:0:7]:5683");
-            addr.add("coap://[fd00::c30c:0:0:8]:5683");
-            
-            addr.add("coap://[aaaa::c30c:0:0:a]:5683");
-            addr.add("coap://[aaaa::c30c:0:0:b]:5683");
-            addr.add("coap://[aaaa::c30c:0:0:c]:5683");
-            /*addr.add("coap://[aaaa::c30c:0:0:d]:5683");
+            /*
+             * RESOURCE DISCOVERY PHASE
+             * The following call populate the device lists
             */
             discoverResources();
             
             // create server
             ExampleReverseProxy server = new ExampleReverseProxy();
             
-            server.acc_res.init();
-            server.temp_res.init();
-            server.tog_res.init();
-            server.led_res.init();
+            if (acc_dev.size() > 0) {
+            	server.acc_res.init();
+            }
+            if (temp_dev.size() > 0) {
+            	server.temp_res.init();
+            }
+            if (tog_dev.size() > 0) {
+            	server.tog_res.init();
+            }
+            if (led_dev.size() > 0) {
+            	server.led_res.init();
+            }
             
             // add endpoints on all IP addresses
             server.addEndpoints();
             server.start();
-            
-            
-            //System.out.println("Acc cycle : " + acc_cycle);
-            
-            /* check and order for all the others devices */
           
             System.out.println("--- PROXY READY ---");
             
-        } catch (SocketException e) {
-            System.err.println("Failed to initialize server: " + e.getMessage());
         } catch (SocketTimeoutException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			System.err.println("Failed to initialize the server: " + e.getMessage());
 		} catch (MalformedURLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
+			System.err.println("Failed to initialize the server: " +e.getMessage());
 			e.printStackTrace();
 		}
     }
     
+    /**
+     * This function fills the device lists
+     */
     private static void addMotes(String s, String addr){
     	
     	String id = addr.split("\\[")[1].split("\\]")[0];
@@ -128,48 +113,36 @@ public class ExampleReverseProxy extends CoapServer {
     	if(s.contains("rt=\"Acc\"")){
     		acc_dev.add(new AccelerometerDevice(id, addr));
     		System.out.println("Server id " + id + " : Accelerometer added");
-    	}
-    	else if(s.contains("rt=\"Temp\"")){
+    	} else if(s.contains("rt=\"Temp\"")){
     		temp_dev.add(new TemperatureDevice(id, addr));
     		System.out.println("Server id " + id + " : Temperature added");
-    	}
-    	else if(s.contains("rt=\"Led\"")){
+    	} else if(s.contains("rt=\"Led\"")){
     		led_dev.add(new LedsDevice(id , addr));
     		System.out.println("Server id " + id + " : Leds added");
-    	}
-    	else if(s.contains("rt=\"Togg\"")){
+    	} else if(s.contains("rt=\"Togg\"")){
     		tog_dev.add(new ToggleDevice(id ,addr));
     		System.out.println("Server id " + id + " : Toggle added");
-    	}
-    	else
+    	} else {
     		System.out.println("Server id " + id + " : No known resources");
+    	}
     }
     
     private static void discoverResources(){
     	
     	CoapClient cl = new CoapClient();
-    	//without this often proxy cannot get resources (wait a response for 20s)
+    	//without this proxy cannot get resources often (wait for a response for 30s)
     	cl.setTimeout(30000);
     	CoapResponse res;
     	
     	for(String address : addr){
     		cl.setURI(address + "/.well-known/core");
     		res = cl.get();
-    		if(res != null){
-    			//System.out.println(res.getResponseText());
+    		if(res != null){ //erbium server found
     			addMotes(res.getResponseText(), address);
     		} else {
     			System.out.println("Server address " + address.split("//")[1] + " : Resources not found");
     		}
     	}
-    	
-    	/*
-    	System.out.println("--- DEVICES NUMBER ---");
-    	System.out.println("Accelerometer :	" + acc_dev.size());
-    	System.out.println("Temperature :	" + temp_dev.size());
-    	System.out.println("Toggle :	" + tog_dev.size());
-    	System.out.println("Leds : 		" + led_dev.size());
-    	*/
     }
     
     /**
@@ -189,18 +162,26 @@ public class ExampleReverseProxy extends CoapServer {
      * Constructor for a new ExampleReverseProxy server. Here, the resources
      * of the server are initialized.
      */
-    public ExampleReverseProxy() throws SocketException {
-        
-        // provide an instance of resources
-    	acc_res = new VirtualAccelerometer(acc_dev);
-    	temp_res = new VirtualTemperature(temp_dev);
-    	tog_res = new VirtualToggle(tog_dev);
-    	led_res = new VirtualLeds(led_dev);
-    		
-    	add(acc_res);
-        add(temp_res);
-        add(tog_res);
-        add(led_res);
+    public ExampleReverseProxy() {
+    	if (acc_dev.size() > 0) {
+    		acc_res = new VirtualAccelerometer(acc_dev);
+    		add(acc_res);
+    	}
+    	if (temp_dev.size() > 0) {
+    		temp_res = new VirtualTemperature(temp_dev);
+    		add(temp_res);
+    	}
+    	if (tog_dev.size() > 0) {
+    		tog_res = new VirtualToggle(tog_dev);
+    		add(tog_res);
+    	}
+    	if (led_dev.size() > 0) {
+    		led_res = new VirtualLeds(led_dev);
+    		add(led_res);
+    	}
+    	
+    	/* Creating proxy's coap core */
+        add(new CoapResource(".well-known/core"));
     }
     
     /**
@@ -219,8 +200,6 @@ public class ExampleReverseProxy extends CoapServer {
 			throws MalformedURLException, IOException, SocketTimeoutException {
 		URL url = new URL(borderRouter);
 		URLConnection connection = url.openConnection();
-		//The following call is executed implicitly by getInputStream
-		//connection.connect();
 		BufferedReader in = new BufferedReader(new InputStreamReader(
 				connection.getInputStream()));
 		
@@ -241,14 +220,14 @@ public class ExampleReverseProxy extends CoapServer {
 	 * @return an array of string containing the mote's IP addresses
 	 */
 	protected static String[] parseHtml(String html) {
-		/**
+		/*
 		 * The following are the strings that come before and after the list 
 		 * of neighbors in the border router response. They are used by this 
 		 * function to locate the node list.
 		 */
 		final String startTag = "Routes<pre>\n";
 		final String endTag = "</pre></body>";
-		/** this is the separator between addresses **/
+		/* this is the separator between addresses **/
 		final String separator = "/128";
 		
 		ArrayList<String> neighbors = new ArrayList<>();

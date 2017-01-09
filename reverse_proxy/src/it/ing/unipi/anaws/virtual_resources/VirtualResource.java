@@ -12,19 +12,24 @@ import org.eclipse.californium.core.server.resources.ConcurrentCoapResource;
 import it.ing.unipi.anaws.devices.Device;
 import it.ing.unipi.anaws.devices.DeviceComparatorByCharge;
 
-/*
- * Definition of the Accelerometer Resource
+/**
+ * Base class for every possible virtual resource exposed by the proxy.
  */
 public abstract class VirtualResource<T extends Device> extends ConcurrentCoapResource {
 	private static final int THREADS_NUMBER = 4;//number of threads that can handle request on a single resource
+	
+	/* pool of server for the specific resource T */
     private ArrayList<T> dev_list;
     
-    //total number of served requests for device type at the moment
+    //total number of served requests for  each virtual resource at the moment
   	private int tot_req;
   	
-  	//total number of possible requests that devices can handle in a cycle
+  	//total number of possible requests that this virtual resource can handle in a cycle
   	private int cycle;
     
+  	/*
+  	 * When this timer expires, the reverse proxy performs a battery status check.
+  	 */
   	private Timer mTimer;
   	private BatteryTimer mTimerTask;
   	
@@ -53,21 +58,14 @@ public abstract class VirtualResource<T extends Device> extends ConcurrentCoapRe
         mTimerTask = new BatteryTimer();
     }
     
+    /**
+     * Sort the devices pool accordingly to the devices battery status
+     * and assign the number of request for each device.
+     */
     private void orderDevices() {
-    	
-    	/*
-    	System.out.println("--- INITIAL ORDER ---");
-    	for(T device : devices)
-    		System.out.println(device.ID);
-    	*/
-    	
+    
     	Collections.sort(dev_list, new DeviceComparatorByCharge());
     	
-    	/*
-    	System.out.println("--- FINAL ORDER ---");
-    	for(T device : devices)
-    		System.out.println(device.ID);
-    	*/
     	if(dev_list.size() == 0){
     		return;
     	}
@@ -77,10 +75,11 @@ public abstract class VirtualResource<T extends Device> extends ConcurrentCoapRe
     		if(dev_list.get(i).battery.charge>10){
     			dev_list.get(i).req = dev_list.get(i).battery.charge/10;
     		} else {
-    			dev_list.get(i).req = dev_list.get(i).battery.charge;
+    			/* We avoid to overload an almost discharged server without penalizing load balancing
+    			 */
+    			dev_list.get(i).req = 1;
     		}
     		System.out.print(dev_list.get(i).req + "\t");
-    		
     	}
     	System.out.println();
    	}
@@ -90,8 +89,7 @@ public abstract class VirtualResource<T extends Device> extends ConcurrentCoapRe
     	
     	//System.out.println("Served by thread : " + Thread.currentThread().getName());
     	
-    	//XXX accettiamo richieste che non siamo sicuri di soddisfare in futuro
-    	//aggiungi controllo in fase di handle
+    	/* We send an ACK back for each request. Some requests may not be fulfilled because of device availability */
     	exchange.sendAccept();
     	
     	synchronized(this){
@@ -99,6 +97,10 @@ public abstract class VirtualResource<T extends Device> extends ConcurrentCoapRe
     	}
 	}
     
+    /* This method is explicitly synchronized because it can be 
+     * called by the timerTask too (that is executed by a 
+     * different thread).
+     */
     public synchronized void init() {
     	checkBatteryStatus();
         orderDevices();
@@ -108,6 +110,7 @@ public abstract class VirtualResource<T extends Device> extends ConcurrentCoapRe
     
     private void checkBatteryStatus() {
     	
+    	//resetting timer
     	mTimerTask.cancel();
     	mTimerTask = new BatteryTimer();
     	mTimer.schedule(mTimerTask, 4*60*60*1000); //4 hours
@@ -117,17 +120,24 @@ public abstract class VirtualResource<T extends Device> extends ConcurrentCoapRe
     		Device dev = iter.next();
     		int maxTry = 5;
     		int charge = -1;
+    		// we try to obtain the battery status 5 times at most
     		while((charge == -1) && (maxTry > 0)){
     			maxTry--;
     			charge = dev.BatteryGet();
     			
   		 	}
-    		System.out.println("Battery Status:"+charge+" max try:"+maxTry);
-    		if((charge == -1) && maxTry == 0){//assume that the device is disconnected
+    		System.out.println("Battery Status:" + charge + " max try:" + maxTry);
+    		
+    		/* We were unable to get the battery status,
+    		 * assume that the device is disconnected.
+    		 */
+    		if((charge == -1) && maxTry == 0) {
     			System.out.println("Server id " + dev.ID + " : Impossible to get charge, Server Disconnected");
     			iter.remove();//remove current device from the list
     		}
-    		if(charge == 0){
+    		
+    		/* Remove the devices whose charge is too low */
+    		if(charge <= 5) {
     			System.out.println("Server id " + dev.ID + " : Server discharged");
     			iter.remove();
     		}
@@ -154,19 +164,12 @@ public abstract class VirtualResource<T extends Device> extends ConcurrentCoapRe
     		init();
     	}
 
-    	/* Choose the server to whom send the request
-    	 * It is chosen the first one in the ordered list (ordered 
-    	 * in a decreasing percentage of battery) that is not busy
-    	 * and has still remaining request in this cycle
+    	/* Choose the server to send the request to.
+    	 * The first device in the list that still has remaining requests for the current cycle is chosen.
+    	 * The list is ordered by decreasing battery charge percentages.
     	 */
-    	for(i = 0; i < dev_list.size(); i++){//TODO add busy control
+    	for(i = 0; i < dev_list.size(); i++){
     		if(dev_list.get(i).req != 0){
-    			/*
-    			if(acc_dev.get(i).busy){
-    				System.out.println("Server id " + acc_dev.get(i).ID + " : Server busy");
-    				continue;
-    			}
-    			*///TODO check if can be deleted
     			dev_list.get(i).req--;
     			System.out.println("--- DEVICE SELECTION ---");
     			System.out.println("Number of total requests : " + ++tot_req);

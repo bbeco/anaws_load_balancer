@@ -23,21 +23,20 @@ public class VirtualLeds extends VirtualResource<LedsDevice> {
     	
         String opt = exchange.getRequestText();
     	String [] aux = opt.split(",");
-    	//System.out.println(aux[0]+" "+aux[1]);
     	LedsDevice led_dev = (LedsDevice) chooseDevice();
+    	/* No server available for this resource */
     	if(led_dev == null){
     		exchange.respond(ResponseCode.SERVICE_UNAVAILABLE);
     		return;
     	}
     	int tmp = led_dev.LedsPost(aux[0],aux[1]);
     	
+    	/* Ok, the request can be satisfied */
     	if(tmp == 1){
     		exchange.respond(ResponseCode.CHANGED);
-    	}
-    	else if (tmp == -1){
+    	} else if (tmp == -1){ /* Some messages have been lost or the server ran out of battery */
     		exchange.respond(ResponseCode.GATEWAY_TIMEOUT);
-    	}
-    	else{
+    	} else{ /* The server experienced some kind of error */
     		exchange.respond(ResponseCode.BAD_REQUEST);
     	}
     }
@@ -54,13 +53,11 @@ public class VirtualLeds extends VirtualResource<LedsDevice> {
     		return;
     	}
       	int tmp = led_dev.LedsPut(aux[0],aux[1]);
-      	if(tmp == 1){
+      	if(tmp == 1) {
     		exchange.respond(ResponseCode.CHANGED);
-    	}
-    	else if (tmp == -1){
+    	} else if (tmp == -1) {
     		exchange.respond(ResponseCode.GATEWAY_TIMEOUT);
-    	}
-    	else{
+    	} else{
     		exchange.respond(ResponseCode.BAD_REQUEST);
     	}
     }

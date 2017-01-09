@@ -25,12 +25,10 @@ public class Leds {
 		if(re != null){
 			if (re.getCode() == ResponseCode.BAD_REQUEST){	
 				ok = 0;
-			}
-			else{
+			} else {
 				ok = 1;
 			}
-		}
-		else{
+		} else {
 			ok = -1;
 		}
 	}

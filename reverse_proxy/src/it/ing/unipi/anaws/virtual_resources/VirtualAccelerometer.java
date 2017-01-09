@@ -6,8 +6,14 @@ import org.eclipse.californium.core.coap.CoAP.ResponseCode;
 import org.eclipse.californium.core.server.resources.CoapExchange;
 import it.ing.unipi.anaws.devices.AccelerometerDevice;
 
-/*
- * Definition of the Accelerometer Resource
+/**
+ * Definition of the Accelerometer Resource.
+ * This class represents a virtual resource (a resource that is exposed by the 
+ * reverse proxy) that is bound to a pool of accelerometer devices (real Erbium 
+ * servers that expose an accelerometer resource).
+ * When a request is performed to this virtual resource, such request is 
+ * forwarded to a real device of the pool.
+ * The device the request is forwarded to is chosen by {@link #chooseDevice()}.
  */
 public class VirtualAccelerometer extends VirtualResource<AccelerometerDevice> {
     
@@ -30,7 +36,6 @@ public class VirtualAccelerometer extends VirtualResource<AccelerometerDevice> {
     		// respond to the request
     		exchange.respond(res);
     	} else {
-    		//System.out.println("Server id " + acc_dev.get(i).ID + " : Gateway timeout");
     		exchange.respond(ResponseCode.GATEWAY_TIMEOUT);
     	}
     }
