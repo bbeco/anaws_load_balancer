@@ -1,7 +1,7 @@
 all: server
 # use this target explicitly if requried: er-plugtest-server
 
-CONTIKI=../..
+CONTIKI=/home/user/contiki
 
 # linker optimizations
 SMALL=1

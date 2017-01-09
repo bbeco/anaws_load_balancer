@@ -41,6 +41,11 @@ leds_handler(void* request, void* response, uint8_t *buffer, uint16_t preferred_
   aux -= (float)last_battery_request;
   last_battery_request = request_time;
 
+  /**/
+  if (battery_charge == 0) {
+     response = NULL;
+  }
+
   srand(RTIMER_NOW());
   int r = abs(rand() % 5);
   battery_charge -= aux/TIME_DRAIN + r + 1; 
