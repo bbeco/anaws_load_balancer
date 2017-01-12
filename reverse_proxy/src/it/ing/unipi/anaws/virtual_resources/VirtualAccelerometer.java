@@ -21,12 +21,13 @@ public class VirtualAccelerometer extends VirtualResource<AccelerometerDevice> {
         
         // set resource identifier, set pool of threads
         super("accelerometer", "Accelerometer Resource", acc);
+        type = "Accelerometer";
        
     }
     
     @Override
     public void handleGET(CoapExchange exchange) {
-    	AccelerometerDevice acc_dev = (AccelerometerDevice) chooseDevice();
+    	AccelerometerDevice acc_dev = chooseDevice();
     	if(acc_dev == null){
     		exchange.respond(ResponseCode.SERVICE_UNAVAILABLE);
     		return;

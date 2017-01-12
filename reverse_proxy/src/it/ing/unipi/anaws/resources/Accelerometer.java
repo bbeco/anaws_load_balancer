@@ -23,7 +23,7 @@ public class Accelerometer {
 		this.client = new CoapClient();
 		myUri = uri + "/acc";
 		client.setURI(myUri);
-		client.setTimeout(10000);
+		client.setTimeout(8000);
 	}
 	
 	/**

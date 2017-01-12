@@ -16,6 +16,7 @@ public class Temperature {
 		this.client = new CoapClient();
 		myUri = uri + "/temp";
 		client.setURI(myUri);
+		client.setTimeout(8000);
 	}
 	
 	public void Get()

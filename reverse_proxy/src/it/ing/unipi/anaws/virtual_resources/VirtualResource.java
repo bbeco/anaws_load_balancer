@@ -27,6 +27,8 @@ public abstract class VirtualResource<T extends Device> extends ConcurrentCoapRe
   	//total number of possible requests that this virtual resource can handle in a cycle
   	private int cycle;
     
+  	/*specify the type of the resource*/
+  	protected String type;
   	/*
   	 * When this timer expires, the reverse proxy performs a battery status check.
   	 */
@@ -70,9 +72,9 @@ public abstract class VirtualResource<T extends Device> extends ConcurrentCoapRe
     		return;
     	}
     	System.out.println("--- SETTING PARAMETERS ---");
-    	System.out.print("Remaining requests :	");
+    	System.out.print("Remaining requests for "+type+":\t");
     	for(int i = 0; i < dev_list.size(); i++){
-    		if(dev_list.get(i).battery.charge>10){
+    		if(dev_list.get(i).battery.charge > 10){
     			dev_list.get(i).req = dev_list.get(i).battery.charge/10;
     		} else {
     			/* We avoid to overload an almost discharged server without penalizing load balancing
@@ -118,22 +120,17 @@ public abstract class VirtualResource<T extends Device> extends ConcurrentCoapRe
     	Iterator<T> iter = (Iterator<T>) dev_list.iterator();
     	while(iter.hasNext()) {
     		Device dev = iter.next();
-    		int maxTry = 5;
     		int charge = -1;
-    		// we try to obtain the battery status 5 times at most
-    		while((charge == -1) && (maxTry > 0)){
-    			maxTry--;
-    			charge = dev.BatteryGet();
-    			
-  		 	}
-    		System.out.println("Battery Status:" + charge + " max try:" + maxTry);
+    		charge = dev.BatteryGet();
+    		System.out.println("Battery Status:" + charge);
     		
     		/* We were unable to get the battery status,
     		 * assume that the device is disconnected.
     		 */
-    		if((charge == -1) && maxTry == 0) {
+    		if(charge == -1) {
     			System.out.println("Server id " + dev.ID + " : Impossible to get charge, Server Disconnected");
     			iter.remove();//remove current device from the list
+    			continue;
     		}
     		
     		/* Remove the devices whose charge is too low */
@@ -152,7 +149,7 @@ public abstract class VirtualResource<T extends Device> extends ConcurrentCoapRe
     	}
     }
     
-    protected Device chooseDevice() {
+    protected T chooseDevice() {
     	int i;
 
     	//requests cycle is over

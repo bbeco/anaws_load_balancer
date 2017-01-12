@@ -12,7 +12,7 @@ public class Battery {
 	 * If this value is equal to -1, then we encountered an error
 	 * while contacting the battery resource.
 	 */
-	public int  	charge;
+	public int  		charge;
 	CoapClient 			client;
 	String 				myUri;
 	CoapResponse		re;
@@ -21,6 +21,7 @@ public class Battery {
 		this.client = new CoapClient();
 		myUri = uri + batteryResourcePath;
 		client.setURI(myUri);
+		client.setTimeout(16000);
 		charge = -1;
 	}
 	

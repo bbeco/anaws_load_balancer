@@ -16,6 +16,7 @@ public class Leds {
 	{
 		this.client = new CoapClient();
 		myUri = uri + "/led";
+		client.setTimeout(8000);
 	}
 	
 	public void Post(String color, String mode)

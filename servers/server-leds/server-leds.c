@@ -23,7 +23,7 @@
 
 float battery_charge = 100;
 int requests = 0;
-unsigned long last_battery_request = 0;
+unsigned long last_request = 0;
 
 void
 leds_handler(void* request, void* response, uint8_t *buffer, uint16_t preferred_size, int32_t *offset)
@@ -38,8 +38,8 @@ leds_handler(void* request, void* response, uint8_t *buffer, uint16_t preferred_
 
   unsigned long request_time = clock_seconds();
   float aux = request_time;
-  aux -= (float)last_battery_request;
-  last_battery_request = request_time;
+  aux -= (float)last_request;
+  last_request = request_time;
 
   /**/
   if (battery_charge == 0) {
@@ -94,31 +94,12 @@ battery_handler(void *request, void *response, uint8_t *buffer, uint16_t preferr
 
   unsigned long request_time = clock_seconds();
   float aux = request_time;
-  aux -= (float)last_battery_request;
-  last_battery_request = request_time;
-
-  
-  //PRINTF("request time: %lu\n", request_time);
-  
-PRINTF("requests: %d\n", requests);
-PRINTF("aux: %f\n", aux);
-  //PRINTF("aux3600: %lu\n", aux/180);
-  //PRINTF("aux36: %lu\n", aux/360);
-  //PRINTF("last request: %lu\n", last_battery_request);
-  //PRINTF("leds: %d\n", leds_requests);
-  /*
-  PRINTF("toggle: %d\n", toggle_requests);
-  PRINTF("temperature: %d\n", temperature_requests);
-  PRINTF("accelerometer: %d\n", accelerometer_requests);
-  */
-  
-  /*
-  PRINTF("random: %d\n", r);
-  */
+  aux -= (float)last_request;
+  last_request = request_time;
 
   battery_charge -= aux/TIME_DRAIN + BATTERY_DRAIN;
 
-PRINTF("battery charge: %d\n", (int)battery_charge);
+  PRINTF("Battery charge : %d\n", (int)battery_charge);
 
   if(battery_charge < 0)
 	battery_charge = 0;

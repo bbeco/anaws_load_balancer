@@ -16,6 +16,7 @@ public class Toggle {
 		this.client = new CoapClient();
 		myUri = uri + "/togg";
 		client.setURI(myUri);
+		client.setTimeout(8000);
 	}
 	
 	public void Post()

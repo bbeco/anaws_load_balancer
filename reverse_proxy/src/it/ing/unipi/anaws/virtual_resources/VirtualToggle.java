@@ -16,11 +16,12 @@ public class VirtualToggle extends VirtualResource<ToggleDevice> {
         
         // set resource identifier
         super("toggle", "Toggle Resource", tog);
+        type = "Toggle";
     }
     
     @Override
     public void handlePOST(CoapExchange exchange) {
-    	ToggleDevice tog_dev = (ToggleDevice) chooseDevice();
+    	ToggleDevice tog_dev = chooseDevice();
     	if(tog_dev == null){
     		exchange.respond(ResponseCode.SERVICE_UNAVAILABLE);
     		return;

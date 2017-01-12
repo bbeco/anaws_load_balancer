@@ -16,6 +16,7 @@ public class VirtualLeds extends VirtualResource<LedsDevice> {
         
         // set resource identifier
         super("leds", "Leds Resource", leds);
+        type = "Leds";
     }
     
     @Override
@@ -47,7 +48,7 @@ public class VirtualLeds extends VirtualResource<LedsDevice> {
     	String opt = exchange.getRequestText();
     	String [] aux = opt.split(",");
     	
-    	LedsDevice led_dev = (LedsDevice) chooseDevice();
+    	LedsDevice led_dev = chooseDevice();
     	if(led_dev == null){
     		exchange.respond(ResponseCode.SERVICE_UNAVAILABLE);
     		return;

@@ -14,11 +14,12 @@ public class VirtualTemperature extends VirtualResource<TemperatureDevice> {
     public VirtualTemperature(ArrayList<TemperatureDevice> temp) {
         // set resource identifier
         super("temperature", "Temperature Resource", temp);
+        type = "Temperature";
     }
 
     @Override
     public void handleGET(CoapExchange exchange) {
-    	TemperatureDevice temp_dev = (TemperatureDevice) chooseDevice();
+    	TemperatureDevice temp_dev = chooseDevice();
     	if(temp_dev == null){
     		exchange.respond(ResponseCode.SERVICE_UNAVAILABLE);
     		return;
