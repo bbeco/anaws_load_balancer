@@ -22,16 +22,11 @@ public class VirtualTemperature extends VirtualResource<TemperatureDevice> {
 
     @Override
     public void handleGET(CoapExchange exchange) {
-    	try {
-			Thread.sleep(1000);
-		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-    	System.out.println("Respond to a Temperature GET");
+    	
     	TemperatureDevice temp_dev = chooseDevice();
     	if(temp_dev == null){
     		exchange.respond(ResponseCode.SERVICE_UNAVAILABLE);
+    		System.out.println("\nGET on coap://localhost/temperature ends");
     		return;
     	}
     	String res = temp_dev.TempGet();
@@ -41,11 +36,12 @@ public class VirtualTemperature extends VirtualResource<TemperatureDevice> {
     	} else {
     		exchange.respond(ResponseCode.GATEWAY_TIMEOUT);
     	}
+    	System.out.println("\nGET on coap://localhost/temperature ends");
     }
     
     @Override
     public void handlePOST(CoapExchange exchange) {
-    	System.out.println("Respond to a Temperature POST");
+    	
         String opt = exchange.getRequestText();
         
     	TemperatureDevice temp_dev = chooseDevice();
@@ -53,6 +49,7 @@ public class VirtualTemperature extends VirtualResource<TemperatureDevice> {
     	/* No server available for this resource */
     	if(temp_dev == null){
     		exchange.respond(ResponseCode.SERVICE_UNAVAILABLE);
+    		System.out.println("\nPOST on coap://localhost/temperature ends");
     		return;
     	}
     	
@@ -66,17 +63,19 @@ public class VirtualTemperature extends VirtualResource<TemperatureDevice> {
     	} else{ /* The server experienced some kind of error */
     		exchange.respond(ResponseCode.BAD_REQUEST);
     	}
+    	System.out.println("\nPOST on coap://localhost/temperature ends");
     }
     
     @Override
     public void handlePUT(CoapExchange exchange) {
-    	System.out.println("Respond to a Temperature PUT");
+   
     	String opt = exchange.getRequestText();
     	
     	TemperatureDevice temp_dev = chooseDevice();
     	
     	if(temp_dev == null){
     		exchange.respond(ResponseCode.SERVICE_UNAVAILABLE);
+    		System.out.println("\nPUT on coap://localhost/temperature ends");
     		return;
     	}
     	
@@ -88,5 +87,6 @@ public class VirtualTemperature extends VirtualResource<TemperatureDevice> {
     	} else{
     		exchange.respond(ResponseCode.BAD_REQUEST);
     	}
+      	System.out.println("\nPUT on coap://localhost/temperature ends");
     }
 }

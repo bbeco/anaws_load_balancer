@@ -21,13 +21,14 @@ public class VirtualLeds extends VirtualResource<LedsDevice> {
     
     @Override
     public void handlePOST(CoapExchange exchange) {
-    	System.out.println("Respond to a LEDs POST");
+    	
         String opt = exchange.getRequestText();
     	String [] aux = opt.split(",");
-    	LedsDevice led_dev = (LedsDevice) chooseDevice();
+    	LedsDevice led_dev = chooseDevice();
     	/* No server available for this resource */
     	if(led_dev == null){
     		exchange.respond(ResponseCode.SERVICE_UNAVAILABLE);
+    		System.out.println("\nPOST on coap://localhost/leds ends");
     		return;
     	}
     	int tmp = led_dev.LedsPost(aux[0],aux[1]);
@@ -40,17 +41,19 @@ public class VirtualLeds extends VirtualResource<LedsDevice> {
     	} else{ /* The server experienced some kind of error */
     		exchange.respond(ResponseCode.BAD_REQUEST);
     	}
+    	System.out.println("\nPOST on coap://localhost/leds ends");
     }
     
     @Override
     public void handlePUT(CoapExchange exchange) {
-    	System.out.println("Respond to a LEDs PUT");
+    
     	String opt = exchange.getRequestText();
     	String [] aux = opt.split(",");
     	
     	LedsDevice led_dev = chooseDevice();
     	if(led_dev == null){
     		exchange.respond(ResponseCode.SERVICE_UNAVAILABLE);
+    		System.out.println("\nPUT on coap://localhost/leds ends");
     		return;
     	}
       	int tmp = led_dev.LedsPut(aux[0],aux[1]);
@@ -61,5 +64,6 @@ public class VirtualLeds extends VirtualResource<LedsDevice> {
     	} else{
     		exchange.respond(ResponseCode.BAD_REQUEST);
     	}
+      	System.out.println("\nPUT on coap://localhost/leds ends");
     }
 }

@@ -55,6 +55,7 @@ public class ReverseProxy extends CoapServer {
         	tog_dev = new ArrayList<ToggleDevice>();
         	led_dev = new ArrayList<LedsDevice>();
         	
+        	System.out.println("--- Servers available ---");
         	/*
         	 * ADDRESSING PHASE
         	 * creating list of addresses
@@ -66,6 +67,7 @@ public class ReverseProxy extends CoapServer {
         		return;
         	}
         	
+        	System.out.println("--- Resource discovery ---");
             /*
              * RESOURCE DISCOVERY PHASE
              * The following call populate the device lists
@@ -88,11 +90,11 @@ public class ReverseProxy extends CoapServer {
             	server.led_res.init();
             }
             
-            // add endpoints on all IP addresses
+            // add endpoints
             server.addEndpoints();
             server.start();
           
-            System.out.println("--- PROXY READY ---");
+            System.out.println("--- Proxy ready ---");
             
         } catch (SocketTimeoutException e) {
 			System.err.println("Failed to initialize the server: " + e.getMessage());
@@ -148,7 +150,7 @@ public class ReverseProxy extends CoapServer {
     }
     
     /**
-     * Add individual endpoints listening on default CoAP port on all IPv4 addresses of all network interfaces.
+     * Add individual endpoints listening on default CoAP port on Ipv6 localhost address
      */
     private void addEndpoints() {
     	for (InetAddress addr : EndpointManager.getEndpointManager().getNetworkInterfaces()) {
@@ -229,7 +231,7 @@ public class ReverseProxy extends CoapServer {
 		 */
 		final String startTag = "Routes<pre>";
 		final String endTag = "</pre></body>";
-		/* this is the separator between addresses **/
+		/* this is the separator between addresses */
 		final String separator = "/128";
 		
 		ArrayList<String> neighbors = new ArrayList<>();

@@ -71,8 +71,8 @@ public abstract class VirtualResource<T extends Device> extends ConcurrentCoapRe
     	if(dev_list.size() == 0){
     		return;
     	}
-    	System.out.println("--- SETTING PARAMETERS ---");
-    	System.out.print("Remaining requests for "+type+":\t");
+    	
+    	System.out.print("Requests for " + type + " devices in this cycle :\t");
     	for(int i = 0; i < dev_list.size(); i++){
     		if(dev_list.get(i).battery.charge > 10){
     			dev_list.get(i).req = dev_list.get(i).battery.charge/10;
@@ -88,14 +88,12 @@ public abstract class VirtualResource<T extends Device> extends ConcurrentCoapRe
 
     @Override
 	public void handleRequest(final Exchange exchange) {
-    	
-    	//System.out.println("Served by thread : " + Thread.currentThread().getName());
-    	
+    		
     	/* We send an ACK back for each request. Some requests may not be fulfilled because of device availability */
     	exchange.sendAccept();
     	
     	synchronized(this){
-    		System.out.println(exchange.getRequest().getCode() + " on " + exchange.getRequest().getURI());
+    		System.out.println("\n" + exchange.getRequest().getCode() + " on " + exchange.getRequest().getURI() + " starts");
     		super.handleRequest(exchange);
     	}
 	}
@@ -105,6 +103,7 @@ public abstract class VirtualResource<T extends Device> extends ConcurrentCoapRe
      * different thread).
      */
     public synchronized void init() {
+    	System.out.println("\n--- New cycle starts for " + type + " devices ---");
     	checkBatteryStatus();
         orderDevices();
         computeCycle();
@@ -123,7 +122,7 @@ public abstract class VirtualResource<T extends Device> extends ConcurrentCoapRe
     		Device dev = iter.next();
     		int charge = -1;
     		charge = dev.BatteryGet();
-    		System.out.println("Battery Status:" + charge);
+    		System.out.println("Battery Status of server " + dev.ID + " : " + charge);
     		
     		/* We were unable to get the battery status,
     		 * assume that the device is disconnected.
@@ -143,7 +142,6 @@ public abstract class VirtualResource<T extends Device> extends ConcurrentCoapRe
     }
     
     private void computeCycle() {
-    	
     	cycle = 0;
     	for( int i = 0; i < dev_list.size(); i++) {
     		cycle += dev_list.get(i).req;
@@ -152,13 +150,14 @@ public abstract class VirtualResource<T extends Device> extends ConcurrentCoapRe
     
     protected T chooseDevice() {
     	int i;
-
-    	//requests cycle is over
+    	
+    	//no servers available
     	if(cycle == 0){
     		return null;
     	}
+    	//requests cycle is over
     	if(tot_req == cycle){
-    		System.out.println("Cycle is over");
+    		System.out.println("\n--- Cycle is over for " + type + " devices ---");
     		init();
     	}
 
@@ -169,16 +168,14 @@ public abstract class VirtualResource<T extends Device> extends ConcurrentCoapRe
     	for(i = 0; i < dev_list.size(); i++){
     		if(dev_list.get(i).req != 0){
     			dev_list.get(i).req--;
-    			System.out.println("--- DEVICE SELECTION ---");
-    			System.out.println("Number of total requests : " + ++tot_req);
-    			System.out.println("Device selected : " + i);
-    			System.out.println("Server id : " + dev_list.get(i).ID );
-    			System.out.print("Remaining requests :	");
+    			System.out.println("\n--- Selection of a " + type + " device ---");
+    			System.out.println("Number of current total requests : " + ++tot_req);
+    			System.out.println("Selected server id : " + dev_list.get(i).ID);
+    			System.out.print("Remaining requests for " + type + " devices in this cycle :\t");
     			for(int j = 0; j < dev_list.size(); j++) {
-    				System.out.print(dev_list.get(j).req);
-    				System.out.print("	");
+    				System.out.print(dev_list.get(j).req + "\t");
     			}
-    			System.out.println();
+    			System.out.println("");
     			
     			return dev_list.get(i);
     		}

@@ -22,15 +22,15 @@ public class VirtualAccelerometer extends VirtualResource<AccelerometerDevice> {
         // set resource identifier, set pool of threads
         super("accelerometer", "Accelerometer Resource", acc);
         type = "Accelerometer";
-       
     }
     
     @Override
     public void handleGET(CoapExchange exchange) {
-    	System.out.println("Respond to a Accelerometer GET");
+    	
     	AccelerometerDevice acc_dev = chooseDevice();
     	if(acc_dev == null){
     		exchange.respond(ResponseCode.SERVICE_UNAVAILABLE);
+    		System.out.println("\nGET on coap://localhost/accelerometer ends");
     		return;
     	}
     	String res = acc_dev.AccGet();
@@ -40,5 +40,6 @@ public class VirtualAccelerometer extends VirtualResource<AccelerometerDevice> {
     	} else {
     		exchange.respond(ResponseCode.GATEWAY_TIMEOUT);
     	}
+    	System.out.println("\nGET on coap://localhost/accelerometer ends");
     }
 }
