@@ -45,9 +45,11 @@ public class ReverseProxyTester {
 		
 		int counter = 0;
 		
+		int temp = 25;
+		
 		for (int i = 0; i < REQUESTS_NUMBER; i++) {
 				
-			whichRequest = 3;//rand.nextInt(4)+1;
+			whichRequest = rand.nextInt(4) + 1;
 				
 			switch(whichRequest) {
 				
@@ -103,6 +105,20 @@ public class ReverseProxyTester {
 						client.put(ch, color + "," + mode , MediaTypeRegistry.TEXT_PLAIN);
 						
 					}
+				break;
+				
+				case 5:
+					System.out.println("GET TEMPERATURE\n");
+					client.setURI("coap://[::1]:5683/temperature");
+					client.get(ch);
+					String temperature = Integer.toString(++temp);
+					System.out.println("PUT TEMPERATURE\n");
+					client.put(ch, temperature, MediaTypeRegistry.TEXT_PLAIN);
+					System.out.println("GET TEMPERATURE\n");
+					client.get(ch);
+					temperature = Integer.toString(++temp);
+					System.out.println("POST TEMPERATURE\n");
+					client.post(ch, temperature, MediaTypeRegistry.TEXT_PLAIN);
 			}
 		}
 	

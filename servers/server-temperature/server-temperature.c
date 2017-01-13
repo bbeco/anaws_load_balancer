@@ -5,7 +5,7 @@
 #include "contiki-net.h"
 #include "net/rpl/rpl.h"
 #include "rest-engine.h"
-#include "dev/temperature-sensor.h"
+//#include "dev/temperature-sensor.h"
 
 #define DEBUG 1
 #if DEBUG
@@ -22,35 +22,62 @@
 #define TIME_DRAIN 500
 
 float battery_charge = 100;
-int requests = 0;
 unsigned long last_request = 0;
+int temp = 30;
 
 void
-temperature_handler(void* request, void* response, uint8_t *buffer, uint16_t preferred_size, int32_t *offset)
+temperature_get_handler(void* request, void* response, uint8_t *buffer, uint16_t preferred_size, int32_t *offset)
 {
   int length; 
   char message[40];
-  
-  requests++;
 
   unsigned long request_time = clock_seconds();
   float aux = request_time;
   aux -= (float)last_request;
   last_request = request_time;
+  
+  if(battery_charge <= 0)
+  NETSTACK_RADIO.off();
 
   srand(RTIMER_NOW());
   int r = abs(rand() % 5);
   battery_charge -= aux/TIME_DRAIN + r + 1; 
   
-  unsigned int temp = temperature_sensor.value(0);
-
-  sprintf(message, "Temperature  value: %d", temp+30);
+  //unsigned int temp = temperature_sensor.value(0);
+  
+  sprintf(message, "Temperature  value: %d", temp);
   length = strlen(message);
   memcpy(buffer, message, length);
 
   REST.set_header_content_type(response, REST.type.TEXT_PLAIN); 
   REST.set_header_etag(response, (uint8_t *) &length, 1);
   REST.set_response_payload(response, buffer, length);
+}
+
+void
+temperature_post_handler(void *request, void *response, uint8_t *buffer, uint16_t preferred_size, int32_t *offset)
+{
+  size_t len = 0;
+  const char *value = NULL;
+  
+  unsigned long request_time = clock_seconds();
+  float aux = request_time;
+  aux -= (float)last_request;
+  last_request = request_time;
+  
+  if(battery_charge <= 0)
+    NETSTACK_RADIO.off();
+  
+  srand(RTIMER_NOW());
+  int r = abs(rand() % 5);
+  battery_charge -= aux/TIME_DRAIN + r + 1; 
+
+  if(len=REST.get_post_variable(request, "value", &value)) {
+    PRINTF("value %.*s\n", len, value);
+    temp = atoi(value);
+  } else {
+    REST.set_response_status(response, REST.status.BAD_REQUEST);
+  }
 }
 
 void
@@ -69,10 +96,8 @@ battery_handler(void *request, void *response, uint8_t *buffer, uint16_t preferr
   PRINTF("Battery charge : %d\n", (int)battery_charge);
 
   if(battery_charge < 0)
-	battery_charge = 0;
-
-  requests = 0; //XXX debug purpose
-  
+  battery_charge = 0;
+ 
   sprintf(message, "%d", (int)battery_charge);
   length = strlen(message);
   memcpy(buffer, message, length);
@@ -82,7 +107,7 @@ battery_handler(void *request, void *response, uint8_t *buffer, uint16_t preferr
   REST.set_response_payload(response, buffer, length);
 }
 
-RESOURCE(temperature, "title=\"Temp\";rt=\"Temp\"", temperature_handler, NULL, NULL, NULL);
+RESOURCE(temperature, "title=\"Temp\";rt=\"Temp\"", temperature_get_handler, temperature_post_handler, temperature_post_handler, NULL);
 
 RESOURCE(battery, "title=\"Batt\";rt=\"Batt\"", battery_handler, NULL, NULL, NULL);
 

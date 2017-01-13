@@ -15,4 +15,14 @@ public class TemperatureDevice extends Device{
 		temp.Get();
 		return temp.temp;
 	}
+	
+	public int TempPost(String value)	{
+		temp.Post(value);
+		return temp.ok;
+	}
+	
+	public int TempPut(String value)	{
+		temp.Put(value);
+		return temp.ok;
+	}
 }

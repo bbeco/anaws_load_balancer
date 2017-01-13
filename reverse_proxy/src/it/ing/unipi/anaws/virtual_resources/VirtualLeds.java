@@ -21,7 +21,7 @@ public class VirtualLeds extends VirtualResource<LedsDevice> {
     
     @Override
     public void handlePOST(CoapExchange exchange) {
-    	
+    	System.out.println("Respond to a LEDs POST");
         String opt = exchange.getRequestText();
     	String [] aux = opt.split(",");
     	LedsDevice led_dev = (LedsDevice) chooseDevice();
@@ -44,7 +44,7 @@ public class VirtualLeds extends VirtualResource<LedsDevice> {
     
     @Override
     public void handlePUT(CoapExchange exchange) {
-    	
+    	System.out.println("Respond to a LEDs PUT");
     	String opt = exchange.getRequestText();
     	String [] aux = opt.split(",");
     	

@@ -59,11 +59,13 @@ public class ReverseProxy extends CoapServer {
         	 * ADDRESSING PHASE
         	 * creating list of addresses
         	 */
-        	addr = findNeighbors("http://[fd00::c30c:0:0:1]");
+        	addr = findNeighbors("http://[aaaa::201:1:1:1]");
+       
+        	if(addr == null){
+        		System.out.println("No servers found");
+        		return;
+        	}
         	
-            
-            
-            
             /*
              * RESOURCE DISCOVERY PHASE
              * The following call populate the device lists
@@ -130,10 +132,10 @@ public class ReverseProxy extends CoapServer {
     private static void discoverResources(){
     	
     	CoapClient cl = new CoapClient();
-    	//without this proxy cannot get resources often (wait for a response for 30s)
+    	//without this proxy cannot get resources often (wait for a response for 16s)
     	cl.setTimeout(16000);
     	CoapResponse res;
-    	
+   		
     	for(String address : addr){
     		cl.setURI(address + "/.well-known/core");
     		res = cl.get();
@@ -225,7 +227,7 @@ public class ReverseProxy extends CoapServer {
 		 * of neighbors in the border router response. They are used by this 
 		 * function to locate the node list.
 		 */
-		final String startTag = "Routes<pre>\n";
+		final String startTag = "Routes<pre>";
 		final String endTag = "</pre></body>";
 		/* this is the separator between addresses **/
 		final String separator = "/128";

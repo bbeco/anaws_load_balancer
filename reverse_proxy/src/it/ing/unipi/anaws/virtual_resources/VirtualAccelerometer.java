@@ -27,6 +27,7 @@ public class VirtualAccelerometer extends VirtualResource<AccelerometerDevice> {
     
     @Override
     public void handleGET(CoapExchange exchange) {
+    	System.out.println("Respond to a Accelerometer GET");
     	AccelerometerDevice acc_dev = chooseDevice();
     	if(acc_dev == null){
     		exchange.respond(ResponseCode.SERVICE_UNAVAILABLE);

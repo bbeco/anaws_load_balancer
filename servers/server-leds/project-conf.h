@@ -33,10 +33,10 @@
 #define PROJECT_ERBIUM_CONF_H_
 
 #undef IEEE802154_CONF_PANID
-/*#undef NETSTACK_CONF_RDC
+#undef NETSTACK_CONF_RDC
 #define NETSTACK_CONF_RDC     nullrdc_driver
 #undef NETSTACK_CONF_MAC
-#define NETSTACK_CONF_MAC     nullmac_driver*/
+#define NETSTACK_CONF_MAC     nullmac_driver
 #undef REST_MAX_CHUNK_SIZE
 #define REST_MAX_CHUNK_SIZE    64
 #undef COAP_MAX_OPEN_TRANSACTIONS

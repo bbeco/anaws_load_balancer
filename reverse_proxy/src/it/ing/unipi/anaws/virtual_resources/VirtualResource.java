@@ -95,6 +95,7 @@ public abstract class VirtualResource<T extends Device> extends ConcurrentCoapRe
     	exchange.sendAccept();
     	
     	synchronized(this){
+    		System.out.println(exchange.getRequest().getCode() + " on " + exchange.getRequest().getURI());
     		super.handleRequest(exchange);
     	}
 	}

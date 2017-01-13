@@ -22,18 +22,18 @@
 #define TIME_DRAIN 500
 
 float battery_charge = 100;
-int requests = 0;
 unsigned long last_request = 0;
 
 void
 toggle_handler(void* request, void* response, uint8_t *buffer, uint16_t preferred_size, int32_t *offset)
 {
-  requests++;
-  
   unsigned long request_time = clock_seconds();
   float aux = request_time;
   aux -= (float)last_request;
   last_request = request_time;
+  
+   if(battery_charge <= 0)
+     NETSTACK_RADIO.off();
 
   srand(RTIMER_NOW());
   int r = abs(rand() % 5);
@@ -58,9 +58,7 @@ battery_handler(void *request, void *response, uint8_t *buffer, uint16_t preferr
   PRINTF("Battery charge : %d\n", (int)battery_charge);
 
   if(battery_charge < 0)
-	battery_charge = 0;
-
-  requests = 0; //XXX debug purpose
+	  battery_charge = 0;
   
   sprintf(message, "%d", (int)battery_charge);
   length = strlen(message);

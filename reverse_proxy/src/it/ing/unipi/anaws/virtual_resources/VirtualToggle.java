@@ -21,6 +21,7 @@ public class VirtualToggle extends VirtualResource<ToggleDevice> {
     
     @Override
     public void handlePOST(CoapExchange exchange) {
+    	System.out.println("Respond to a Toggle POST");
     	ToggleDevice tog_dev = chooseDevice();
     	if(tog_dev == null){
     		exchange.respond(ResponseCode.SERVICE_UNAVAILABLE);
@@ -37,6 +38,7 @@ public class VirtualToggle extends VirtualResource<ToggleDevice> {
     
     @Override
     public void handlePUT(CoapExchange exchange) {
+    	System.out.println("Respond to a Toggle PUT");
     	ToggleDevice tog_dev = (ToggleDevice) chooseDevice();
     	if(tog_dev == null){
     		exchange.respond(ResponseCode.SERVICE_UNAVAILABLE);
