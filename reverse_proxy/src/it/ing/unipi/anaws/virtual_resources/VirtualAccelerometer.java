@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import org.eclipse.californium.core.coap.CoAP.ResponseCode;
 import org.eclipse.californium.core.server.resources.CoapExchange;
 import it.ing.unipi.anaws.devices.AccelerometerDevice;
+import it.ing.unipi.anaws.devices.Device;
 
 /**
  * Definition of the Accelerometer Resource.
@@ -15,9 +16,9 @@ import it.ing.unipi.anaws.devices.AccelerometerDevice;
  * forwarded to a real device of the pool.
  * The device the request is forwarded to is chosen by {@link #chooseDevice()}.
  */
-public class VirtualAccelerometer extends VirtualResource<AccelerometerDevice> {
+public class VirtualAccelerometer extends VirtualResource {
     
-    public VirtualAccelerometer(ArrayList<AccelerometerDevice> acc) {
+    public VirtualAccelerometer(ArrayList<Device> acc) {
         
         // set resource identifier, set pool of threads
         super("accelerometer", "Accelerometer Resource", acc);
@@ -27,7 +28,7 @@ public class VirtualAccelerometer extends VirtualResource<AccelerometerDevice> {
     @Override
     public void handleGET(CoapExchange exchange) {
     	
-    	AccelerometerDevice acc_dev = chooseDevice();
+    	AccelerometerDevice acc_dev = (AccelerometerDevice) chooseDevice();
     	if(acc_dev == null){
     		exchange.respond(ResponseCode.SERVICE_UNAVAILABLE);
     		System.out.println("\nGET on coap://localhost/accelerometer ends");

@@ -18,6 +18,7 @@ import org.eclipse.californium.core.network.CoapEndpoint;
 import org.eclipse.californium.core.network.EndpointManager;
 import org.eclipse.californium.core.network.config.NetworkConfig;
 import it.ing.unipi.anaws.devices.AccelerometerDevice;
+import it.ing.unipi.anaws.devices.Device;
 import it.ing.unipi.anaws.devices.LedsDevice;
 import it.ing.unipi.anaws.devices.TemperatureDevice;
 import it.ing.unipi.anaws.devices.ToggleDevice;
@@ -31,10 +32,17 @@ public class ReverseProxy extends CoapServer {
 	private static final int COAP_PORT = NetworkConfig.getStandard().getInt(NetworkConfig.Keys.COAP_PORT);
 	
 	//motes 
-	public static ArrayList<AccelerometerDevice> acc_dev;
-	public static ArrayList<TemperatureDevice> temp_dev;
-	public static ArrayList<ToggleDevice> tog_dev;
-	public static ArrayList<LedsDevice> led_dev;
+	public static ArrayList<Device> dev;
+	
+	/*
+	 * This are updated every time a mote is added.
+	 * They are used to choose what virtual resources the proxy
+	 * has to create.
+	 */
+	public static boolean accelerometerFound;
+	public static boolean ledsFound;
+	public static boolean toggleFound;
+	public static boolean temperatureFound;
 	
 	/* virtual resources */
 	VirtualAccelerometer acc_res;
@@ -48,12 +56,11 @@ public class ReverseProxy extends CoapServer {
     public static void main(String[] args) {
         
         try {
+        	/* no resources seem available at beginning */
+        	accelerometerFound = ledsFound = toggleFound = temperatureFound =false;
         	
         	//create lists of devices
-        	acc_dev = new ArrayList<AccelerometerDevice>();
-        	temp_dev = new ArrayList<TemperatureDevice>();
-        	tog_dev = new ArrayList<ToggleDevice>();
-        	led_dev = new ArrayList<LedsDevice>();
+        	dev = new ArrayList<Device>();
         	
         	System.out.println("--- Servers available ---");
         	/*
@@ -77,17 +84,14 @@ public class ReverseProxy extends CoapServer {
             // create server
             ReverseProxy server = new ReverseProxy();
             
-            if (acc_dev.size() > 0) {
+            if (dev.size() > 0) {
+            	/* XXX it does not matter which virtual resource type 
+            	 * we use for initialization because checkBatteryStatus(), 
+            	 * orderDevices() and computeCycle() act on the device list
+            	 * (which is in common) and tot_req is static (so it is in 
+            	 * common too)
+            	 */
             	server.acc_res.init();
-            }
-            if (temp_dev.size() > 0) {
-            	server.temp_res.init();
-            }
-            if (tog_dev.size() > 0) {
-            	server.tog_res.init();
-            }
-            if (led_dev.size() > 0) {
-            	server.led_res.init();
             }
             
             // add endpoints
@@ -99,7 +103,6 @@ public class ReverseProxy extends CoapServer {
         } catch (SocketTimeoutException e) {
 			System.err.println("Failed to initialize the server: " + e.getMessage());
 		} catch (MalformedURLException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (IOException e) {
 			System.err.println("Failed to initialize the server: " +e.getMessage());
@@ -108,25 +111,49 @@ public class ReverseProxy extends CoapServer {
     }
     
     /**
-     * This function fills the device lists
+     * This function fills the device list
+     * 
+     * @param s The response text of /.well-known/core for this mote
+     * @param addr This mote IP address
      */
     private static void addMotes(String s, String addr){
     	
     	String id = addr.split("\\[")[1].split("\\]")[0];
+    	
+    	/* 
+    	 * This mote, with address addr can already be added to the list
+    	 * because we have already checked for a response from its core
+    	 */
+    	dev.add(new Device(id, addr));
+    	
+    	/* This indicates if this mote has any kind of known resource */
+    	boolean ok = false;
   
     	if(s.contains("rt=\"Acc\"")){
-    		acc_dev.add(new AccelerometerDevice(id, addr));
     		System.out.println("Server id " + id + " : Accelerometer added");
-    	} else if(s.contains("rt=\"Temp\"")){
-    		temp_dev.add(new TemperatureDevice(id, addr));
+    		accelerometerFound = true;
+    		ok = true;
+    	}
+    	
+    	if(s.contains("rt=\"Temp\"")){
     		System.out.println("Server id " + id + " : Temperature added");
-    	} else if(s.contains("rt=\"Led\"")){
-    		led_dev.add(new LedsDevice(id , addr));
+    		temperatureFound = true;
+    		ok = true;
+    	}
+    	
+    	if(s.contains("rt=\"Led\"")){
     		System.out.println("Server id " + id + " : Leds added");
-    	} else if(s.contains("rt=\"Togg\"")){
-    		tog_dev.add(new ToggleDevice(id ,addr));
+    		ledsFound = true;
+    		ok = true;
+    	}
+    	
+    	if(s.contains("rt=\"Togg\"")){
     		System.out.println("Server id " + id + " : Toggle added");
-    	} else {
+    		toggleFound = true;
+    		ok = true;
+    	}
+    	
+    	if (!ok) { // no known resource found for this mote
     		System.out.println("Server id " + id + " : No known resources");
     	}
     }
@@ -162,25 +189,25 @@ public class ReverseProxy extends CoapServer {
 		}
     }
 
-    /*
-     * Constructor for a new ExampleReverseProxy server. Here, the resources
-     * of the server are initialized.
+    /**
+     * Constructor for a new ExampleReverseProxy server. The resources
+     * of the server are initialized here (including its CoAP core)
      */
     public ReverseProxy() {
-    	if (acc_dev.size() > 0) {
-    		acc_res = new VirtualAccelerometer(acc_dev);
+    	if (accelerometerFound) {
+    		acc_res = new VirtualAccelerometer(dev);
     		add(acc_res);
     	}
-    	if (temp_dev.size() > 0) {
-    		temp_res = new VirtualTemperature(temp_dev);
+    	if (temperatureFound) {
+    		temp_res = new VirtualTemperature(dev);
     		add(temp_res);
     	}
-    	if (tog_dev.size() > 0) {
-    		tog_res = new VirtualToggle(tog_dev);
+    	if (toggleFound) {
+    		tog_res = new VirtualToggle(dev);
     		add(tog_res);
     	}
-    	if (led_dev.size() > 0) {
-    		led_res = new VirtualLeds(led_dev);
+    	if (ledsFound) {
+    		led_res = new VirtualLeds(dev);
     		add(led_res);
     	}
     	

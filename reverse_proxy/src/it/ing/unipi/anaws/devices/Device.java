@@ -1,6 +1,10 @@
 package it.ing.unipi.anaws.devices;
 
+import it.ing.unipi.anaws.resources.Accelerometer;
 import it.ing.unipi.anaws.resources.Battery;
+import it.ing.unipi.anaws.resources.Leds;
+import it.ing.unipi.anaws.resources.Temperature;
+import it.ing.unipi.anaws.resources.Toggle;
 
 /** Base class for every possible device
  * The set of classes AccelerometerDevice, LedsDevice, etc. represents 
@@ -14,13 +18,29 @@ public class Device{
 	public Battery	battery;
 	public String 	ID; //IPV6 address
 	
+	/* TODO sostituire questo con un array unica */
+	protected Accelerometer acc;
+	protected Leds led;
+	protected Temperature temp;
+	protected Toggle tog;
+	
 	/* request counter*/
 	public int		req;
 	
+	/**
+	 *
+	 * @param ID IPv6 Address
+	 * @param uri resource uri
+	 */
 	public Device (String ID, String uri){
 		battery = new Battery(uri);
 		this.ID = ID;
 		req = 0;
+		
+		acc = null;
+		led = null;
+		temp = null;
+		tog = null;
 	}
 	
 	/**
