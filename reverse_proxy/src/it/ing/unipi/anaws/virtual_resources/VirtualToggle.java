@@ -5,29 +5,29 @@ import java.util.ArrayList;
 import org.eclipse.californium.core.coap.CoAP.ResponseCode;
 import org.eclipse.californium.core.server.resources.CoapExchange;
 
-import it.ing.unipi.anaws.devices.ToggleDevice;
+import it.ing.unipi.anaws.devices.Device;
 
 /*
  * Definition of the Toggle Resource
  */
-public class VirtualToggle extends VirtualResource<ToggleDevice> {
+public class VirtualToggle extends VirtualResource {
     
-    public VirtualToggle(ArrayList<ToggleDevice> tog) {
+    public VirtualToggle(ArrayList<Device> dev) {
         
         // set resource identifier
-        super("toggle", "Toggle Resource", tog);
+        super("toggle", "Toggle Resource", dev);
         type = "Toggle";
     }
     
     @Override
     public void handlePOST(CoapExchange exchange) {
-    	ToggleDevice tog_dev = chooseDevice();
+    	Device tog_dev = chooseDevice();
     	if(tog_dev == null){
     		exchange.respond(ResponseCode.SERVICE_UNAVAILABLE);
     		System.out.println("\nPOST on coap://localhost/toggle ends");
     		return;
     	}
-    	int tmp = tog_dev.TogglePost();
+    	int tmp = tog_dev.getToggle().Post();
     		
     	if(tmp == 1){
     		exchange.respond(ResponseCode.CHANGED);
@@ -40,13 +40,13 @@ public class VirtualToggle extends VirtualResource<ToggleDevice> {
     @Override
     public void handlePUT(CoapExchange exchange) {
     	
-    	ToggleDevice tog_dev = (ToggleDevice) chooseDevice();
+    	Device tog_dev = chooseDevice();
     	if(tog_dev == null){
     		exchange.respond(ResponseCode.SERVICE_UNAVAILABLE);
     		System.out.println("\nPUT on coap://localhost/toggle ends");
     		return;
     	}
-    	int tmp = tog_dev.TogglePut();
+    	int tmp = tog_dev.getToggle().Put();
     	
     	if(tmp == 1){
     		exchange.respond(ResponseCode.CHANGED);

@@ -6,30 +6,29 @@ import org.eclipse.californium.core.Utils;
 import org.eclipse.californium.core.coap.CoAP.ResponseCode;
 import org.eclipse.californium.core.server.resources.CoapExchange;
 
-import it.ing.unipi.anaws.devices.LedsDevice;
-import it.ing.unipi.anaws.devices.TemperatureDevice;
+import it.ing.unipi.anaws.devices.Device;
 
 /*
  * Definition of the Temperature Resource
  */
-public class VirtualTemperature extends VirtualResource<TemperatureDevice> {
+public class VirtualTemperature extends VirtualResource{
     
-    public VirtualTemperature(ArrayList<TemperatureDevice> temp) {
+    public VirtualTemperature(ArrayList<Device> dev) {
         // set resource identifier
-        super("temperature", "Temperature Resource", temp);
+        super("temperature", "Temperature Resource", dev);
         type = "Temperature";
     }
 
     @Override
     public void handleGET(CoapExchange exchange) {
     	
-    	TemperatureDevice temp_dev = chooseDevice();
+    	Device temp_dev = chooseDevice();
     	if(temp_dev == null){
     		exchange.respond(ResponseCode.SERVICE_UNAVAILABLE);
     		System.out.println("\nGET on coap://localhost/temperature ends");
     		return;
     	}
-    	String res = temp_dev.TempGet();
+    	String res = temp_dev.getTemperature().Get();
     	if(!res.equals("")) {
     		// respond to the request
     		exchange.respond(res);
@@ -44,7 +43,7 @@ public class VirtualTemperature extends VirtualResource<TemperatureDevice> {
     	
         String opt = exchange.getRequestText();
         
-    	TemperatureDevice temp_dev = chooseDevice();
+    	Device temp_dev = chooseDevice();
     	
     	/* No server available for this resource */
     	if(temp_dev == null){
@@ -53,7 +52,7 @@ public class VirtualTemperature extends VirtualResource<TemperatureDevice> {
     		return;
     	}
     	
-    	int tmp = temp_dev.TempPost(opt);
+    	int tmp = temp_dev.getTemperature().Post(opt);
  
     	/* Ok, the request can be satisfied */
     	if(tmp == 1){
@@ -71,7 +70,7 @@ public class VirtualTemperature extends VirtualResource<TemperatureDevice> {
    
     	String opt = exchange.getRequestText();
     	
-    	TemperatureDevice temp_dev = chooseDevice();
+    	Device temp_dev = chooseDevice();
     	
     	if(temp_dev == null){
     		exchange.respond(ResponseCode.SERVICE_UNAVAILABLE);
@@ -79,7 +78,7 @@ public class VirtualTemperature extends VirtualResource<TemperatureDevice> {
     		return;
     	}
     	
-      	int tmp = temp_dev.TempPut(opt);
+      	int tmp = temp_dev.getTemperature().Put(opt);
       	if(tmp == 1) {
     		exchange.respond(ResponseCode.CHANGED);
     	} else if (tmp == -1) {

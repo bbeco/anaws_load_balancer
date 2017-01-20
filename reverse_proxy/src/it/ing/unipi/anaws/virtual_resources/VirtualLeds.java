@@ -5,17 +5,17 @@ import java.util.ArrayList;
 import org.eclipse.californium.core.coap.CoAP.ResponseCode;
 import org.eclipse.californium.core.server.resources.CoapExchange;
 
-import it.ing.unipi.anaws.devices.LedsDevice;
+import it.ing.unipi.anaws.devices.Device;
 
 /*
  * Definition of the Leds Resource
  */
-public class VirtualLeds extends VirtualResource<LedsDevice> {
+public class VirtualLeds extends VirtualResource {
     
-    public VirtualLeds(ArrayList<LedsDevice> leds) {
+    public VirtualLeds(ArrayList<Device> dev) {
         
         // set resource identifier
-        super("leds", "Leds Resource", leds);
+        super("leds", "Leds Resource", dev);
         type = "Leds";
     }
     
@@ -24,14 +24,14 @@ public class VirtualLeds extends VirtualResource<LedsDevice> {
     	
         String opt = exchange.getRequestText();
     	String [] aux = opt.split(",");
-    	LedsDevice led_dev = chooseDevice();
+    	Device led_dev = chooseDevice();
     	/* No server available for this resource */
     	if(led_dev == null){
     		exchange.respond(ResponseCode.SERVICE_UNAVAILABLE);
     		System.out.println("\nPOST on coap://localhost/leds ends");
     		return;
     	}
-    	int tmp = led_dev.LedsPost(aux[0],aux[1]);
+    	int tmp = led_dev.getLeds().Post(aux[0],aux[1]);
     	
     	/* Ok, the request can be satisfied */
     	if(tmp == 1){
@@ -50,13 +50,13 @@ public class VirtualLeds extends VirtualResource<LedsDevice> {
     	String opt = exchange.getRequestText();
     	String [] aux = opt.split(",");
     	
-    	LedsDevice led_dev = chooseDevice();
+    	Device led_dev = chooseDevice();
     	if(led_dev == null){
     		exchange.respond(ResponseCode.SERVICE_UNAVAILABLE);
     		System.out.println("\nPUT on coap://localhost/leds ends");
     		return;
     	}
-      	int tmp = led_dev.LedsPut(aux[0],aux[1]);
+      	int tmp = led_dev.getLeds().Put(aux[0],aux[1]);
       	if(tmp == 1) {
     		exchange.respond(ResponseCode.CHANGED);
     	} else if (tmp == -1) {

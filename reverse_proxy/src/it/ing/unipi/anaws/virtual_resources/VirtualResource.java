@@ -77,10 +77,10 @@ public abstract class VirtualResource extends ConcurrentCoapResource {
     		return;
     	}
     	
-    	System.out.print("Requests for " + type + " devices in this cycle :\t");
+    	System.out.print("Requests for devices in this cycle :\t");
     	for(int i = 0; i < dev_list.size(); i++){
-    		if(dev_list.get(i).battery.charge > 10){
-    			dev_list.get(i).req = dev_list.get(i).battery.charge/10;
+    		if(dev_list.get(i).getBattery().charge > 10){
+    			dev_list.get(i).req = dev_list.get(i).getBattery().charge/10;
     		} else {
     			/* We avoid to overload an almost discharged server without penalizing load balancing
     			 */
@@ -131,7 +131,8 @@ public abstract class VirtualResource extends ConcurrentCoapResource {
     	while(iter.hasNext()) {
     		Device dev = iter.next();
     		int charge = -1;
-    		charge = dev.BatteryGet();
+    		charge = dev.getBattery().Get();
+    		
     		System.out.println("Battery Status of server " + dev.ID + " : " + charge);
     		
     		/* We were unable to get the battery status,

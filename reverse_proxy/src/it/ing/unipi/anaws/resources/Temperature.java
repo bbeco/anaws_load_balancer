@@ -5,23 +5,16 @@ import org.eclipse.californium.core.CoapResponse;
 import org.eclipse.californium.core.coap.MediaTypeRegistry;
 import org.eclipse.californium.core.coap.CoAP.ResponseCode;
 
-public class Temperature {
+public class Temperature extends BaseResource {
 	
 	public String 		temp; //"" no response
-	CoapClient 			client;
-	String 				myUri;
-	CoapResponse		re;
-	public int 			ok; /* 1 success, -1 no response, 0 bad options */
+	public int 			ok;  /* 1 success, -1 no response, 0 bad options */
 	
-	public Temperature(String uri)
-	{
-		this.client = new CoapClient();
-		myUri = uri + "/temp";
-		client.setURI(myUri);
-		client.setTimeout(8000);
+	public Temperature(String uri){
+		super(uri + "/temp");
 	}
-	
-	public void Get()
+
+	public String Get()
 	{
 		re = client.get();
 		if(re != null){
@@ -32,9 +25,11 @@ public class Temperature {
 		else{
 			temp = "";
 		}
+		
+		return temp;
 	}
 	
-	public void Post(String value)
+	public int Post(String value)
 	{
 		re = client.post("value=" + value, MediaTypeRegistry.TEXT_PLAIN);
 		if(re != null){
@@ -48,9 +43,11 @@ public class Temperature {
 		else{
 			ok = -1;
 		}
+		
+		return ok;
 	}
 	
-	public void Put(String value)
+	public int Put(String value)
 	{
 		client.put("value=" + value, MediaTypeRegistry.TEXT_PLAIN);
 		if(re != null){
@@ -64,5 +61,7 @@ public class Temperature {
 		else{
 			ok = -1;
 		}
+		
+		return ok;
 	}
 }

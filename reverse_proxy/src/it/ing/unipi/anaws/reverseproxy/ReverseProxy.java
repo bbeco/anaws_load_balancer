@@ -120,41 +120,43 @@ public class ReverseProxy extends CoapServer {
     	
     	String id = addr.split("\\[")[1].split("\\]")[0];
     	
-    	/* 
-    	 * This mote, with address addr can already be added to the list
-    	 * because we have already checked for a response from its core
-    	 */
-    	dev.add(new Device(id, addr));
-    	
     	/* This indicates if this mote has any kind of known resource */
     	boolean ok = false;
+    	boolean [] found = {false, false, false, false};//[0] accelerometer, [1] temperature, [2] leds, [3] toggle
   
     	if(s.contains("rt=\"Acc\"")){
     		System.out.println("Server id " + id + " : Accelerometer added");
     		accelerometerFound = true;
+    		found[0] = true;
     		ok = true;
     	}
     	
     	if(s.contains("rt=\"Temp\"")){
     		System.out.println("Server id " + id + " : Temperature added");
     		temperatureFound = true;
+    		found[1] = true;
     		ok = true;
     	}
     	
     	if(s.contains("rt=\"Led\"")){
     		System.out.println("Server id " + id + " : Leds added");
     		ledsFound = true;
+    		found[2] = true;
     		ok = true;
     	}
     	
     	if(s.contains("rt=\"Togg\"")){
     		System.out.println("Server id " + id + " : Toggle added");
     		toggleFound = true;
+    		found[3] = true;
     		ok = true;
     	}
     	
     	if (!ok) { // no known resource found for this mote
     		System.out.println("Server id " + id + " : No known resources");
+    	}
+    	else{
+    		dev.add(new Device(id, addr, found));
     	}
     }
     

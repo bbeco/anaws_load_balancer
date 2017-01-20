@@ -6,6 +6,6 @@ public class DeviceComparatorByCharge implements Comparator<Device> {
 
 	@Override
 	public int compare(Device d1, Device d2){
-		return d2.battery.charge - d1.battery.charge;
+		return d2.getBattery().charge - d1.getBattery().charge;
 	}
 }

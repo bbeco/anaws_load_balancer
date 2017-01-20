@@ -5,23 +5,17 @@ import org.eclipse.californium.core.CoapResponse;
 import org.eclipse.californium.core.coap.MediaTypeRegistry;
 import org.eclipse.californium.core.coap.CoAP.ResponseCode;
 
-public class Leds {
+public class Leds extends BaseResource {
 	
 	public int 		ok; /* 1 success, -1 no response, 0 bad options */
-	CoapClient 		client;
-	String 			myUri;
-	CoapResponse	re;
 	
-	public Leds(String uri)
-	{
-		this.client = new CoapClient();
-		myUri = uri + "/led";
-		client.setTimeout(8000);
+	public Leds(String uri){
+		super(uri + "/led");
 	}
 	
-	public void Post(String color, String mode)
+	public int Post(String color, String mode)
 	{
-		client.setURI(myUri + "?color=" + color);
+		client.setURI(uri + "?color=" + color);
 		re = client.post("mode=" + mode, MediaTypeRegistry.TEXT_PLAIN);
 		if(re != null){
 			if (re.getCode() == ResponseCode.BAD_REQUEST){	
@@ -32,11 +26,13 @@ public class Leds {
 		} else {
 			ok = -1;
 		}
+		
+		return ok;
 	}
 	
-	public void Put(String color, String mode)
+	public int Put(String color, String mode)
 	{
-		client.setURI(myUri + "?color=" + color);
+		client.setURI(uri + "?color=" + color);
 		re = client.put("mode=" + mode, MediaTypeRegistry.TEXT_PLAIN);
 		if(re != null){
 			if (re.getCode() == ResponseCode.BAD_REQUEST){	
@@ -49,5 +45,7 @@ public class Leds {
 		else{
 			ok = -1;
 		}
+		
+		return ok;
 	}
 }

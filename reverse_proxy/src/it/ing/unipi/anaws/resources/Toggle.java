@@ -4,37 +4,34 @@ import org.eclipse.californium.core.CoapClient;
 import org.eclipse.californium.core.CoapResponse;
 import org.eclipse.californium.core.coap.MediaTypeRegistry;
 
-public class Toggle {
+public class Toggle extends BaseResource {
 	
 	public int 		ok; /* 1 success, -1 no response*/
-	CoapClient 		client;
-	String 			myUri;
-	CoapResponse 	re;
 	
 	public Toggle(String uri)
 	{
-		this.client = new CoapClient();
-		myUri = uri + "/togg";
-		client.setURI(myUri);
-		client.setTimeout(8000);
+		super(uri + "/togg");
 	}
 	
-	public void Post()
+	public int Post()
 	{
 		re = client.post("", MediaTypeRegistry.TEXT_PLAIN);
 		if(re != null)
 			ok = 1;
-		else{
+		else
 			ok = -1;
-		}
+		
+		return ok;
 	}
 	
-	public void Put()
+	public int Put()
 	{
 		client.put("", MediaTypeRegistry.TEXT_PLAIN);
 		if(re != null)
 			ok = 1;
 		else
 			ok = -1;
+		
+		return ok;
 	}
 }

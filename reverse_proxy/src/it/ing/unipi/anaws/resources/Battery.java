@@ -4,7 +4,7 @@ import org.eclipse.californium.core.CoapClient;
 import org.eclipse.californium.core.CoapResponse;
 import org.eclipse.californium.core.coap.CoAP.ResponseCode;
 
-public class Battery {
+public class Battery extends BaseResource {
 	/** This is the path this class is looking for when checking the battery resource */
 	private static final String batteryResourcePath = "/batt";
 	
@@ -13,15 +13,9 @@ public class Battery {
 	 * while contacting the battery resource.
 	 */
 	public int  		charge;
-	CoapClient 			client;
-	String 				myUri;
-	CoapResponse		re;
-
+	
 	public Battery(String uri) {
-		this.client = new CoapClient();
-		myUri = uri + batteryResourcePath;
-		client.setURI(myUri);
-		client.setTimeout(16000);
+		super(uri + batteryResourcePath);
 		charge = -1;
 	}
 	
@@ -30,12 +24,14 @@ public class Battery {
 	 * value in the charge variable. If some error occurred charge 
 	 * is set to -1
 	 */
-	public void Get() {
+	public int Get() {
 		re = client.get();
 		if(re != null && re.getCode() == ResponseCode.CONTENT){				
 			charge = Integer.parseInt(re.getResponseText());
 		} else{
 			charge = -1;
 		}
+		
+		return charge;
 	}
 }

@@ -15,10 +15,9 @@ import it.ing.unipi.anaws.resources.Toggle;
  */
 public class Device{
 	
-	public Battery	battery;
 	public String 	ID; //IPV6 address
 	
-	/* TODO sostituire questo con un array unica */
+	protected Battery	battery;
 	protected Accelerometer acc;
 	protected Leds led;
 	protected Temperature temp;
@@ -32,27 +31,41 @@ public class Device{
 	 * @param ID IPv6 Address
 	 * @param uri resource uri
 	 */
-	public Device (String ID, String uri){
+	public Device (String ID, String uri, boolean [] resources){
 		battery = new Battery(uri);
 		this.ID = ID;
 		req = 0;
 		
-		acc = null;
-		led = null;
-		temp = null;
-		tog = null;
+		if(resources[0])//true if accelerometer found
+			acc = new Accelerometer(uri);
+		
+		if(resources[1])//true if temperature found
+			temp = new Temperature(uri);
+		
+		if(resources[2])//true if leds found
+			led = new Leds(uri);
+		
+		if(resources[3])//true if toggle found
+			tog = new Toggle(uri);
+	}	
+	
+	public Battery getBattery(){
+		return battery;
 	}
 	
-	/**
-	 * This method performs a GET request on the battery
-	 * resource exposed by the Erbium server provided by the
-	 * mote associated to this class instance. It then
-	 * returns the updated battery status.
-	 * @return The battery charge level or -1 if some error occurred.
-	 */
-	public int BatteryGet()	{
-		battery.Get();
-		
-		return battery.charge;
+	public Temperature getTemperature(){
+		return temp;
+	}
+	
+	public Toggle getToggle(){
+		return tog;
+	}
+	
+	public Leds getLeds(){
+		return led;
+	}
+	
+	public Accelerometer getAccelerometer(){
+		return acc;
 	}
 }
