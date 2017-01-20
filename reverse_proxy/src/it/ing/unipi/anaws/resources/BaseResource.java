@@ -5,9 +5,9 @@ import org.eclipse.californium.core.CoapResponse;
 
 public class BaseResource {
 	
-	CoapClient 			client;
-	String 				uri;
-	CoapResponse		re;
+	protected CoapClient 		client;
+	protected String 			uri;
+	protected CoapResponse		re;
 	
 	public BaseResource (String uri){
 		this.uri = uri;

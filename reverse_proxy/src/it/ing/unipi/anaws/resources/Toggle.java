@@ -6,11 +6,14 @@ import org.eclipse.californium.core.coap.MediaTypeRegistry;
 
 public class Toggle extends BaseResource {
 	
-	public int 		ok; /* 1 success, -1 no response*/
+	/** This is the path this class is looking for when checking the Temperature resource */
+	private static final String toggleResourcePath = "/togg";
+	
+	protected int 		ok; /* 1 success, -1 no response*/
 	
 	public Toggle(String uri)
 	{
-		super(uri + "/togg");
+		super(uri + toggleResourcePath);
 	}
 	
 	public int Post()

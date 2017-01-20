@@ -15,16 +15,16 @@ import it.ing.unipi.anaws.resources.Toggle;
  */
 public class Device{
 	
-	public String 	ID; //IPV6 address
+	protected String 		ID; //IPV6 address
 	
-	protected Battery	battery;
+	protected Battery		battery;
 	protected Accelerometer acc;
-	protected Leds led;
-	protected Temperature temp;
-	protected Toggle tog;
+	protected Leds 			led;
+	protected Temperature 	temp;
+	protected Toggle 		tog;
 	
 	/* request counter*/
-	public int		req;
+	protected int			req;
 	
 	/**
 	 *
@@ -67,5 +67,35 @@ public class Device{
 	
 	public Accelerometer getAccelerometer(){
 		return acc;
+	}
+	
+	public String getID(){
+		return ID;
+	}
+	
+	public int getLeftRequests(){
+		return req;
+	}
+	
+	public void decrementLeftRequests(){
+		req--;
+	}
+	
+	public void setLeftRequests(int r){
+		req = r;
+	}
+	
+	public boolean deviceHasThisResource(int resType){
+	    switch (resType){
+	    	case 0: return (acc != null) ? true : false;
+	    	
+	    	case 1: return (temp != null) ? true : false;
+	   
+	    	case 2: return (led != null) ? true : false;
+	    
+	    	case 3: return (tog != null) ? true : false;
+	    
+	    	default: return false;
+	    }	
 	}
 }

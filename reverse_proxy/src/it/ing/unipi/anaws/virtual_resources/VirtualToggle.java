@@ -21,9 +21,10 @@ public class VirtualToggle extends VirtualResource {
     
     @Override
     public void handlePOST(CoapExchange exchange) {
-    	Device tog_dev = chooseDevice();
+    	Device tog_dev = chooseDevice(3);
     	if(tog_dev == null){
     		exchange.respond(ResponseCode.SERVICE_UNAVAILABLE);
+    		System.out.println("\nThere are not available servers for the " + type + " resource");
     		System.out.println("\nPOST on coap://localhost/toggle ends");
     		return;
     	}
@@ -40,9 +41,10 @@ public class VirtualToggle extends VirtualResource {
     @Override
     public void handlePUT(CoapExchange exchange) {
     	
-    	Device tog_dev = chooseDevice();
+    	Device tog_dev = chooseDevice(3);
     	if(tog_dev == null){
     		exchange.respond(ResponseCode.SERVICE_UNAVAILABLE);
+    		System.out.println("\nThere are not available servers for the " + type + " resource");
     		System.out.println("\nPUT on coap://localhost/toggle ends");
     		return;
     	}

@@ -5,6 +5,7 @@ import org.eclipse.californium.core.CoapResponse;
 import org.eclipse.californium.core.coap.CoAP.ResponseCode;
 
 public class Battery extends BaseResource {
+	
 	/** This is the path this class is looking for when checking the battery resource */
 	private static final String batteryResourcePath = "/batt";
 	
@@ -12,7 +13,7 @@ public class Battery extends BaseResource {
 	 * If this value is equal to -1, then we encountered an error
 	 * while contacting the battery resource.
 	 */
-	public int  		charge;
+	protected int  		charge;
 	
 	public Battery(String uri) {
 		super(uri + batteryResourcePath);
@@ -32,6 +33,10 @@ public class Battery extends BaseResource {
 			charge = -1;
 		}
 		
+		return charge;
+	}
+	
+	public int getCharge(){
 		return charge;
 	}
 }

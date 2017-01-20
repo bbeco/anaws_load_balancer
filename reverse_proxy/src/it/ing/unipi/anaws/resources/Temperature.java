@@ -7,11 +7,14 @@ import org.eclipse.californium.core.coap.CoAP.ResponseCode;
 
 public class Temperature extends BaseResource {
 	
-	public String 		temp; //"" no response
-	public int 			ok;  /* 1 success, -1 no response, 0 bad options */
+	/** This is the path this class is looking for when checking the Temperature resource */
+	private static final String temperatureResourcePath = "/temp";
+	
+	protected String 		temp; //"" no response
+	protected int 			ok;  /* 1 success, -1 no response, 0 bad options */
 	
 	public Temperature(String uri){
-		super(uri + "/temp");
+		super(uri + temperatureResourcePath);
 	}
 
 	public String Get()

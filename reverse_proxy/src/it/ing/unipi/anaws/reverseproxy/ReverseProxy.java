@@ -17,11 +17,7 @@ import org.eclipse.californium.core.CoapServer;
 import org.eclipse.californium.core.network.CoapEndpoint;
 import org.eclipse.californium.core.network.EndpointManager;
 import org.eclipse.californium.core.network.config.NetworkConfig;
-import it.ing.unipi.anaws.devices.AccelerometerDevice;
 import it.ing.unipi.anaws.devices.Device;
-import it.ing.unipi.anaws.devices.LedsDevice;
-import it.ing.unipi.anaws.devices.TemperatureDevice;
-import it.ing.unipi.anaws.devices.ToggleDevice;
 import it.ing.unipi.anaws.virtual_resources.VirtualAccelerometer;
 import it.ing.unipi.anaws.virtual_resources.VirtualLeds;
 import it.ing.unipi.anaws.virtual_resources.VirtualTemperature;
@@ -32,32 +28,32 @@ public class ReverseProxy extends CoapServer {
 	private static final int COAP_PORT = NetworkConfig.getStandard().getInt(NetworkConfig.Keys.COAP_PORT);
 	
 	//motes 
-	public static ArrayList<Device> dev;
+	protected static ArrayList<Device> dev;
 	
 	/*
 	 * This are updated every time a mote is added.
 	 * They are used to choose what virtual resources the proxy
 	 * has to create.
 	 */
-	public static boolean accelerometerFound;
-	public static boolean ledsFound;
-	public static boolean toggleFound;
-	public static boolean temperatureFound;
+	protected static boolean accelerometerFound;
+	protected static boolean ledsFound;
+	protected static boolean toggleFound;
+	protected static boolean temperatureFound;
 	
 	/* virtual resources */
-	VirtualAccelerometer acc_res;
-	VirtualTemperature temp_res;
-	VirtualToggle tog_res;
-	VirtualLeds led_res;
+	protected VirtualAccelerometer acc_res;
+	protected VirtualTemperature temp_res;
+	protected VirtualToggle tog_res;
+	protected VirtualLeds led_res;
 	
 	//addresses
-	public static String[] addr;
+	protected static String[] addr;
 	
     public static void main(String[] args) {
         
         try {
         	/* no resources seem available at beginning */
-        	accelerometerFound = ledsFound = toggleFound = temperatureFound =false;
+        	accelerometerFound = ledsFound = toggleFound = temperatureFound = false;
         	
         	//create lists of devices
         	dev = new ArrayList<Device>();

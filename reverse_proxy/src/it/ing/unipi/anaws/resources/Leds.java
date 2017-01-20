@@ -7,10 +7,13 @@ import org.eclipse.californium.core.coap.CoAP.ResponseCode;
 
 public class Leds extends BaseResource {
 	
+	/** This is the path this class is looking for when checking the Leds resource */
+	private static final String ledsResourcePath = "/led";
+	
 	public int 		ok; /* 1 success, -1 no response, 0 bad options */
 	
 	public Leds(String uri){
-		super(uri + "/led");
+		super(uri + ledsResourcePath);
 	}
 	
 	public int Post(String color, String mode)

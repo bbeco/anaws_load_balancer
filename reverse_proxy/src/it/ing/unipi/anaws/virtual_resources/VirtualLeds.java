@@ -24,10 +24,11 @@ public class VirtualLeds extends VirtualResource {
     	
         String opt = exchange.getRequestText();
     	String [] aux = opt.split(",");
-    	Device led_dev = chooseDevice();
+    	Device led_dev = chooseDevice(2);
     	/* No server available for this resource */
     	if(led_dev == null){
     		exchange.respond(ResponseCode.SERVICE_UNAVAILABLE);
+    		System.out.println("\nThere are not available servers for the " + type + " resource");
     		System.out.println("\nPOST on coap://localhost/leds ends");
     		return;
     	}
@@ -50,9 +51,10 @@ public class VirtualLeds extends VirtualResource {
     	String opt = exchange.getRequestText();
     	String [] aux = opt.split(",");
     	
-    	Device led_dev = chooseDevice();
+    	Device led_dev = chooseDevice(2);
     	if(led_dev == null){
     		exchange.respond(ResponseCode.SERVICE_UNAVAILABLE);
+    		System.out.println("\nThere are not available servers for the " + type + " resource");
     		System.out.println("\nPUT on coap://localhost/leds ends");
     		return;
     	}

@@ -10,11 +10,14 @@ import org.eclipse.californium.core.coap.CoAP.ResponseCode;
  */
 public class Accelerometer extends BaseResource{
 	
-	public String 		acc; //"" no response
+	/** This is the path this class is looking for when checking the accelerometer resource */
+	private static final String accelerometerResourcePath = "/acc";
+	
+	protected String 		acc; //"" no response
 
 	
 	public Accelerometer(String uri) {
-		super(uri + "/acc");
+		super(uri + accelerometerResourcePath);
 	}
 	
 	/**
