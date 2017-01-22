@@ -22,7 +22,7 @@ public class VirtualTemperature extends VirtualResource{
     @Override
     public void handleGET(CoapExchange exchange) {
     	
-    	Device temp_dev = chooseDevice(1);
+    	Device temp_dev = chooseDevice();
     	if(temp_dev == null){
     		exchange.respond(ResponseCode.SERVICE_UNAVAILABLE);
     		System.out.println("\nThere are not available servers for the " + type + " resource");
@@ -44,7 +44,7 @@ public class VirtualTemperature extends VirtualResource{
     	
         String opt = exchange.getRequestText();
         
-    	Device temp_dev = chooseDevice(1);
+    	Device temp_dev = chooseDevice();
     	
     	/* No server available for this resource */
     	if(temp_dev == null){
@@ -72,7 +72,7 @@ public class VirtualTemperature extends VirtualResource{
    
     	String opt = exchange.getRequestText();
     	
-    	Device temp_dev = chooseDevice(1);
+    	Device temp_dev = chooseDevice();
     	
     	if(temp_dev == null){
     		exchange.respond(ResponseCode.SERVICE_UNAVAILABLE);

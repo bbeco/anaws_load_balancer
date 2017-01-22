@@ -30,7 +30,7 @@ public abstract class VirtualResource extends ConcurrentCoapResource {
     
   	/*specify the type of the resource*/
   	protected String type;
-  	
+  
   	/*
   	 * When this timer expires, the reverse proxy performs a battery status check.
   	 * TODO questo deve essere a comune tra le resources (come tot_req e cycle)
@@ -60,6 +60,8 @@ public abstract class VirtualResource extends ConcurrentCoapResource {
         	mTimer =  new Timer(true);
         if(mTimerTask == null)
         	mTimerTask = new BatteryTimer();
+        
+        tot_req = 0;
     }
     
     @Override
@@ -80,17 +82,13 @@ public abstract class VirtualResource extends ConcurrentCoapResource {
      * different thread).
      * Called only at the beginning and when timer expires
      */
-    public void init() {
+    public void init(){
     	synchronized(dev_list){
 	    	System.out.println("\n--- Starting new session ---");
 	    	checkAllBatteryStatus();
 	    	orderDevices();
-	    	System.out.print("Requests for devices :\t");
-	    	for(int i = 0; i < dev_list.size(); i++){
-	    		System.out.print(dev_list.get(i).getLeftRequests() + "\t");
-	    	}
+	    	printRequests();
 	    	System.out.println();
-	    	tot_req = 0;
     	}
     }
     
@@ -103,8 +101,8 @@ public abstract class VirtualResource extends ConcurrentCoapResource {
     	Collections.sort(dev_list, new DeviceComparatorByCharge());
    	}
   
-    /* check the battery status for a mote with a specified resource */
-    private void checkBatteryStatus(int resType){
+    /* check the battery status for motes with a specified resource */
+    private void checkBatteryStatus(String resType){
     	
     	Iterator<Device> iter = dev_list.iterator();
     	while(iter.hasNext()) {
@@ -128,7 +126,7 @@ public abstract class VirtualResource extends ConcurrentCoapResource {
 	    			iter.remove();
 	    		}
 	    		else{
-	    			System.out.println("Battery Status of server " + dev.getID() + " : " + charge);
+	    			System.out.println("Battery Status of server " + dev.getID() + " : " + charge + " (" + resType + ")");
 	    			//Update remaining requests 
 	    			if(dev.getBattery().getCharge() > 10){
 	        			dev.setLeftRequests(charge/10);
@@ -148,15 +146,15 @@ public abstract class VirtualResource extends ConcurrentCoapResource {
     private void checkAllBatteryStatus() {
     	
     	//resetting timer
-    	mTimerTask.cancel();//TODO forse non serve perche quando entra qua il timer e scaduto
+    	mTimerTask.cancel();
     	mTimerTask = new BatteryTimer();
     	mTimer.schedule(mTimerTask, 4*60*60*1000); //4 hours
     	
-    	//check battery of all motes (TODO l unico problema e che se un mote ha due risorse viene controllato due volte)
-    	checkBatteryStatus(0);
-    	checkBatteryStatus(1);
-    	checkBatteryStatus(2);
-    	checkBatteryStatus(3);
+    	//check battery of all motes
+    	checkBatteryStatus("Accelerometer");
+    	checkBatteryStatus("Temperature");
+    	checkBatteryStatus("Leds");
+    	checkBatteryStatus("Toggle");
     }
     
     /*
@@ -165,58 +163,95 @@ public abstract class VirtualResource extends ConcurrentCoapResource {
      * it can be accessed in mutual exclusion only and the shared object's lock
      * guarantees that.
      */
-    protected Device chooseDevice(int resType) { //0 accelerometer, 1 temperature, 2 leds, 3 toggle
+    protected Device chooseDevice() {
     	synchronized (dev_list) {
 	   	
+    		ArrayList<Device> targetServers = new ArrayList<Device>();
     		int i;
     		
-    		//search an available server for the requested resource
-	    	boolean serverFound = false;
-	    	for(i = 0; i < dev_list.size(); i++){
-	    		if(dev_list.get(i).deviceHasThisResource(resType)){
-	    			serverFound = true;
-	    		}
-	    	}
-	    	
-	    	if(serverFound == true){
+    		//search for a server that can handle the request
+    		for(i = 0; i < dev_list.size(); i++){
+    			if(dev_list.get(i).deviceHasThisResource(type)){
+    				targetServers.add(dev_list.get(i));
+    			}
+    		}
+    		
+	    	// if there is a server that can handle the request
+	    	if(targetServers.size() > 0){
 		    	/* Choose the server to send the request to.
 		    	 * The first device in the list that still has remaining requests for the current cycle is chosen.
 		    	 * The list is ordered by decreasing battery charge percentages.
 		    	 * We are sure that at least one device with the requested resource is available
 		    	 */
-		    	for(i = 0; i < dev_list.size(); i++){
-		    		if(dev_list.get(i).getLeftRequests() != 0 && dev_list.get(i).deviceHasThisResource(resType)){
-		    			dev_list.get(i).decrementLeftRequests();
+		    	for(i = 0; i < targetServers.size(); i++){
+		    		Device aux = targetServers.get(i);		    		
+		    		if(aux.getLeftRequests() != 0){
+		    			tot_req++;
+		    			aux.decrementLeftRequests();
 		    			System.out.println("\n--- Selection of a " + type + " device ---");
-		    			System.out.println("Number of current total requests : " + ++tot_req);
-		    			System.out.println("Selected server id : " + dev_list.get(i).getID());
-		    			System.out.print("Remaining requests for devices :\t");
-		    			for(int j = 0; j < dev_list.size(); j++) {
-		    				System.out.print(dev_list.get(j).getLeftRequests() + "\t");
-		    			}
-		    			System.out.println("");
-		    			
-		    			return dev_list.get(i);
+		    			System.out.println("Number of current total requests : " + tot_req);
+		    			System.out.println("Selected server id : " + aux.getID());
+		    			printRequests();
+		    			return aux;
 		    		}
 		    	}
 	    	
 		    	//All the available device for the requested resource finished the requests in the cycle
-		    	if(i == dev_list.size()){
-		    		checkBatteryStatus(resType);
+		    	if(i == targetServers.size()){
+		    		System.out.println("\n--- Update of " + type + " devices ---");
+		    		checkBatteryStatus(type);
 		    		orderDevices();
-		    		System.out.println("--- Updated " + type + " devices");
-		    		System.out.print("Remaining requests for devices :\t");
-	    			for(int j = 0; j < dev_list.size(); j++) {
-	    				System.out.print(dev_list.get(j).getLeftRequests() + "\t");
-	    			}
-	    			System.out.println("");
-	    			
+		    		printRequests();
 	    			//call again chooseDevice since servers have been updated
-	    			return chooseDevice(resType);
+	    			return chooseDevice();
 		    	}
 	    	}
 	    	
 	    	return null;//no server available
 	    }
+    }
+    
+    private void printRequests(){
+    	
+    	ArrayList<Integer> acc_req 	= new ArrayList<Integer>();
+    	ArrayList<Integer> temp_req = new ArrayList<Integer>();
+    	ArrayList<Integer> led_req 	= new ArrayList<Integer>();
+    	ArrayList<Integer> tog_req 	= new ArrayList<Integer>();
+    	
+    	for(int i = 0; i < dev_list.size(); i ++){
+    		Device aux = dev_list.get(i);
+    		if(aux.deviceHasThisResource("Accelerometer"))
+    			acc_req.add(aux.getLeftRequests());
+    		if(aux.deviceHasThisResource("Temperature"))
+    			temp_req.add(aux.getLeftRequests());
+    		if(aux.deviceHasThisResource("Leds"))
+    			led_req.add(aux.getLeftRequests());
+    		if(aux.deviceHasThisResource("Toggle"))
+    			tog_req.add(aux.getLeftRequests());
+    	}
+    	
+    	System.out.print("\nRemaining requests for accelerometer devices :\t");
+    	for(int i = 0; i < acc_req.size(); i++) {
+			System.out.print(acc_req.get(i) + "\t");
+		}
+		System.out.println("");
+		
+		System.out.print("Remaining requests for temperature devices :\t");
+    	for(int i = 0; i < temp_req.size(); i++) {
+			System.out.print(temp_req.get(i) + "\t");
+		}
+		System.out.println("");
+		
+		System.out.print("Remaining requests for leds devices :\t\t");
+    	for(int i = 0; i < led_req.size(); i++) {
+			System.out.print(led_req.get(i) + "\t");
+		}
+		System.out.println("");
+		
+		System.out.print("Remaining requests for toggle devices :\t\t");
+    	for(int i = 0; i < tog_req.size(); i++) {
+			System.out.print(tog_req.get(i) + "\t");
+		}
+		System.out.println("");
     }
 }

@@ -24,7 +24,7 @@ public class VirtualLeds extends VirtualResource {
     	
         String opt = exchange.getRequestText();
     	String [] aux = opt.split(",");
-    	Device led_dev = chooseDevice(2);
+    	Device led_dev = chooseDevice();
     	/* No server available for this resource */
     	if(led_dev == null){
     		exchange.respond(ResponseCode.SERVICE_UNAVAILABLE);
@@ -51,7 +51,7 @@ public class VirtualLeds extends VirtualResource {
     	String opt = exchange.getRequestText();
     	String [] aux = opt.split(",");
     	
-    	Device led_dev = chooseDevice(2);
+    	Device led_dev = chooseDevice();
     	if(led_dev == null){
     		exchange.respond(ResponseCode.SERVICE_UNAVAILABLE);
     		System.out.println("\nThere are not available servers for the " + type + " resource");

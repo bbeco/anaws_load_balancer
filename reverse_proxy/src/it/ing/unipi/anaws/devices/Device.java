@@ -85,15 +85,15 @@ public class Device{
 		req = r;
 	}
 	
-	public boolean deviceHasThisResource(int resType){
-	    switch (resType){
-	    	case 0: return (acc != null) ? true : false;
+	public boolean deviceHasThisResource(String resource){
+	    switch (resource){
+	    	case "Accelerometer": return (acc != null) ? true : false;
 	    	
-	    	case 1: return (temp != null) ? true : false;
+	    	case "Temperature": return (temp != null) ? true : false;
 	   
-	    	case 2: return (led != null) ? true : false;
+	    	case "Leds": return (led != null) ? true : false;
 	    
-	    	case 3: return (tog != null) ? true : false;
+	    	case "Toggle": return (tog != null) ? true : false;
 	    
 	    	default: return false;
 	    }	

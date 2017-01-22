@@ -27,7 +27,7 @@ public class VirtualAccelerometer extends VirtualResource {
     @Override
     public void handleGET(CoapExchange exchange) {
     	
-    	Device acc_dev = chooseDevice(0);
+    	Device acc_dev = chooseDevice();
     	if(acc_dev == null){
     		exchange.respond(ResponseCode.SERVICE_UNAVAILABLE);
     		System.out.println("\nThere are not available servers for the " + type + " resource");

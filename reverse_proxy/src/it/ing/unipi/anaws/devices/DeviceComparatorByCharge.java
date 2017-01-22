@@ -2,6 +2,9 @@ package it.ing.unipi.anaws.devices;
 
 import java.util.Comparator;
 
+/**
+ * This class is needed for ordering the devices by battery charge
+ */
 public class DeviceComparatorByCharge implements Comparator<Device> {
 
 	@Override

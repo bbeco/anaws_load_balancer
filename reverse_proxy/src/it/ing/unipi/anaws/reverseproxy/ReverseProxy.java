@@ -33,12 +33,13 @@ public class ReverseProxy extends CoapServer {
 	/*
 	 * This are updated every time a mote is added.
 	 * They are used to choose what virtual resources the proxy
-	 * has to create.
+	 * has to create. And they the keep track of the number of
+	 * devices for each resource
 	 */
-	protected static boolean accelerometerFound;
-	protected static boolean ledsFound;
-	protected static boolean toggleFound;
-	protected static boolean temperatureFound;
+	protected static int 	accelerometerDevices;
+	protected static int 	ledsDevices;
+	protected static int 	toggleDevices;
+	protected static int	temperatureDevices;
 	
 	/* virtual resources */
 	protected VirtualAccelerometer acc_res;
@@ -53,7 +54,7 @@ public class ReverseProxy extends CoapServer {
         
         try {
         	/* no resources seem available at beginning */
-        	accelerometerFound = ledsFound = toggleFound = temperatureFound = false;
+        	accelerometerDevices = ledsDevices = toggleDevices = temperatureDevices = 0;
         	
         	//create lists of devices
         	dev = new ArrayList<Device>();
@@ -84,8 +85,7 @@ public class ReverseProxy extends CoapServer {
             	/* XXX it does not matter which virtual resource type 
             	 * we use for initialization because checkBatteryStatus(), 
             	 * orderDevices() and computeCycle() act on the device list
-            	 * (which is in common) and tot_req is static (so it is in 
-            	 * common too)
+            	 * (which is in common)
             	 */
             	server.acc_res.init();
             }
@@ -118,33 +118,33 @@ public class ReverseProxy extends CoapServer {
     	
     	/* This indicates if this mote has any kind of known resource */
     	boolean ok = false;
-    	boolean [] found = {false, false, false, false};//[0] accelerometer, [1] temperature, [2] leds, [3] toggle
+    	boolean [] resourceFound = {false, false, false, false};//[0] accelerometer, [1] temperature, [2] leds, [3] toggle
   
     	if(s.contains("rt=\"Acc\"")){
     		System.out.println("Server id " + id + " : Accelerometer added");
-    		accelerometerFound = true;
-    		found[0] = true;
+    		accelerometerDevices++;
+    		resourceFound[0] = true;
     		ok = true;
     	}
     	
     	if(s.contains("rt=\"Temp\"")){
     		System.out.println("Server id " + id + " : Temperature added");
-    		temperatureFound = true;
-    		found[1] = true;
+    		temperatureDevices++;
+    		resourceFound[1] = true;
     		ok = true;
     	}
     	
     	if(s.contains("rt=\"Led\"")){
     		System.out.println("Server id " + id + " : Leds added");
-    		ledsFound = true;
-    		found[2] = true;
+    		ledsDevices++;
+    		resourceFound[2] = true;
     		ok = true;
     	}
     	
     	if(s.contains("rt=\"Togg\"")){
     		System.out.println("Server id " + id + " : Toggle added");
-    		toggleFound = true;
-    		found[3] = true;
+    		toggleDevices++;
+    		resourceFound[3] = true;
     		ok = true;
     	}
     	
@@ -152,7 +152,7 @@ public class ReverseProxy extends CoapServer {
     		System.out.println("Server id " + id + " : No known resources");
     	}
     	else{
-    		dev.add(new Device(id, addr, found));
+    		dev.add(new Device(id, addr, resourceFound));
     	}
     }
     
@@ -192,19 +192,19 @@ public class ReverseProxy extends CoapServer {
      * of the server are initialized here (including its CoAP core)
      */
     public ReverseProxy() {
-    	if (accelerometerFound) {
+    	if (accelerometerDevices > 0) {
     		acc_res = new VirtualAccelerometer(dev);
     		add(acc_res);
     	}
-    	if (temperatureFound) {
+    	if (temperatureDevices > 0) {
     		temp_res = new VirtualTemperature(dev);
     		add(temp_res);
     	}
-    	if (toggleFound) {
+    	if (toggleDevices > 0) {
     		tog_res = new VirtualToggle(dev);
     		add(tog_res);
     	}
-    	if (ledsFound) {
+    	if (ledsDevices > 0) {
     		led_res = new VirtualLeds(dev);
     		add(led_res);
     	}
