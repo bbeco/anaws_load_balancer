@@ -17,7 +17,8 @@ import it.ing.unipi.anaws.devices.DeviceComparatorByCharge;
  */
 public abstract class VirtualResource extends ConcurrentCoapResource {
 	
-	protected static final int THREADS_NUMBER = 4;//number of threads that can handle request on a single resource
+	/* number of threads that can handle request on a single resource */
+	protected static final int THREADS_NUMBER = 4;
 	
 	/* pool of server for the specific resource T */
     protected static ArrayList<Device> dev_list;
@@ -25,6 +26,7 @@ public abstract class VirtualResource extends ConcurrentCoapResource {
     /* Number of served request (for every possible resource).
      * This was made static because it is common to every virtual resource.
      * XXX It must be updated in mutual exclusive access only!
+     * TODO Questa dovrebbe essere rimossa perchè serviva quando avevamo il ciclo.
      */
   	protected static int tot_req;
     
@@ -32,8 +34,8 @@ public abstract class VirtualResource extends ConcurrentCoapResource {
   	protected String type;
   
   	/*
-  	 * When this timer expires, the reverse proxy performs a battery status check.
-  	 * TODO questo deve essere a comune tra le resources (come tot_req e cycle)
+  	 * When this timer expires, the reverse proxy performs a battery status 
+  	 * check.
   	 */
   	protected static Timer mTimer;
   	protected static BatteryTimer mTimerTask;
@@ -53,9 +55,13 @@ public abstract class VirtualResource extends ConcurrentCoapResource {
         // set display name
         getAttributes().setTitle(title);
         
-        //only the first virtual resource created instantiates the timer and takes the devices 
-        if(dev_list == null)
-        	dev_list = devs;
+        /* only the first virtual resource created instantiates the timer and 
+         * takes the devices.
+         */
+        /* TODO questo if per dev_list non dovrebbe servire. */
+        //if(dev_list == null)
+        dev_list = devs;
+        
         if(mTimer == null)
         	mTimer =  new Timer(true);
         if(mTimerTask == null)
@@ -66,10 +72,18 @@ public abstract class VirtualResource extends ConcurrentCoapResource {
     
     @Override
 	public void handleRequest(final Exchange exchange) {
-    		
-    	/* We send an ACK back for each request. Some requests may not be fulfilled because of device availability */
+
+    	/* We send an ACK back for each request. Some requests may not be 
+    	 * fulfilled because of device availability.
+    	 * Accordingly to the Californium documentation, this sends an ACK only
+    	 * if the request was carried in a CON message.
+    	 */
     	exchange.sendAccept();
     	
+    	/* The following block is synchronized so that only one of the 
+    	 * THREADS_NUMBER threads can access this resource at a time. By doing 
+    	 * so we add a coherence mechanism for the resources status.
+    	 */
     	synchronized(this){
     		System.out.println("\n" + exchange.getRequest().getCode() + " on " + exchange.getRequest().getURI() + " starts");
     		super.handleRequest(exchange);
@@ -77,9 +91,8 @@ public abstract class VirtualResource extends ConcurrentCoapResource {
 	}
     
     /* 
-     * This method is explicitly synchronized because it can be 
-     * called by the timerTask too (that is executed by a 
-     * different thread).
+     * This method is explicitly synchronized because it can be called by the 
+     * timerTask too (that is executed by a different thread).
      * Called only at the beginning and when timer expires
      */
     public void init(){
@@ -95,6 +108,10 @@ public abstract class VirtualResource extends ConcurrentCoapResource {
     /**
      * Sort the devices pool accordingly to the devices battery status
      * and assign the number of request for each device.
+     * 
+     * This method is called by {@link #init()} or {@link #chooseDevice()} which
+     * are synchronized on the device list, so there is no nedd for it to be 
+     * synchronized.
      */
     private void orderDevices() {
     
@@ -102,6 +119,16 @@ public abstract class VirtualResource extends ConcurrentCoapResource {
    	}
   
     /* check the battery status for motes with a specified resource */
+    /**
+     * This method check the battery status of every mote that exposes the given
+     *  resource.
+     *  This method is called by {@link #chooseDevice()} or {@link #init()} 
+     *  which are both synchronized on the shared device list, so it does not 
+     *  need to be synchronized.
+     *  
+     * @param resType the resource type a device must expose in order to be 
+     * updated by this method.
+     */
     private void checkBatteryStatus(String resType){
     	
     	Iterator<Device> iter = dev_list.iterator();
@@ -124,14 +151,14 @@ public abstract class VirtualResource extends ConcurrentCoapResource {
 	    		if(charge <= 5) {
 	    			System.out.println("Server id " + dev.getID() + " : Server discharged");
 	    			iter.remove();
-	    		}
-	    		else{
+	    		} else {
 	    			System.out.println("Battery Status of server " + dev.getID() + " : " + charge + " (" + resType + ")");
 	    			//Update remaining requests 
 	    			if(dev.getBattery().getCharge() > 10){
 	        			dev.setLeftRequests(charge/10);
 	        		} else {
-	        			/* We avoid to overload an almost discharged server without penalizing load balancing
+	        			/* We avoid to overload an almost discharged server 
+	        			 * without penalizing load balancing.
 	        			 */
 	        			dev.setLeftRequests(1);
 	        		}
@@ -140,8 +167,15 @@ public abstract class VirtualResource extends ConcurrentCoapResource {
     	}
     }
     
-    /* TODO deve essere sincronizzato sulla lista dei device
-     * perchè accede a mTimerTask (che dovrebbe essere comune a tutte le risorse)
+    /**
+     * This method updated the battery of every mote.
+     * This updated the timer status so that it this method is called 
+     * periodically.
+     * 
+     * Even though this method modifies mTimerTask which is shared by many 
+     * instances of this class, it does not need to be synchronized, since 
+     * mTimerTask is updated only here and this method is always called by a 
+     * single thread at a time. 
      */
     private void checkAllBatteryStatus() {
     	
@@ -169,7 +203,9 @@ public abstract class VirtualResource extends ConcurrentCoapResource {
     		ArrayList<Device> targetServers = new ArrayList<Device>();
     		int i;
     		
-    		//search for a server that can handle the request
+    		/* TargetServers is filled with devices that own a resource the 
+    		 * request can be forwarded to.
+    		 */
     		for(i = 0; i < dev_list.size(); i++){
     			if(dev_list.get(i).deviceHasThisResource(type)){
     				targetServers.add(dev_list.get(i));
@@ -179,9 +215,11 @@ public abstract class VirtualResource extends ConcurrentCoapResource {
 	    	// if there is a server that can handle the request
 	    	if(targetServers.size() > 0){
 		    	/* Choose the server to send the request to.
-		    	 * The first device in the list that still has remaining requests for the current cycle is chosen.
+		    	 * The first device in the list that still has some requests 
+		    	 * left is chosen.
 		    	 * The list is ordered by decreasing battery charge percentages.
-		    	 * We are sure that at least one device with the requested resource is available
+		    	 * We are sure that at least one device with the requested 
+		    	 * resource is available.
 		    	 */
 		    	for(i = 0; i < targetServers.size(); i++){
 		    		Device aux = targetServers.get(i);		    		
@@ -196,7 +234,11 @@ public abstract class VirtualResource extends ConcurrentCoapResource {
 		    		}
 		    	}
 	    	
-		    	//All the available device for the requested resource finished the requests in the cycle
+		    	/* No device has been chosen in the previous loop. There are no 
+		    	 * device with request left. It's time to update the request by 
+		    	 * checking the battery for each device with the requested 
+		    	 * resource.
+		    	 */
 		    	if(i == targetServers.size()){
 		    		System.out.println("\n--- Update of " + type + " devices ---");
 		    		checkBatteryStatus(type);
@@ -211,6 +253,9 @@ public abstract class VirtualResource extends ConcurrentCoapResource {
 	    }
     }
     
+    /**
+     * This method prints the number of requests left for each resource.
+     */
     private void printRequests(){
     	
     	ArrayList<Integer> acc_req 	= new ArrayList<Integer>();

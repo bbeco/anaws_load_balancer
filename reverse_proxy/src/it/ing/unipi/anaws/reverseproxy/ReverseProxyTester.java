@@ -50,6 +50,11 @@ public class ReverseProxyTester {
 		for (int i = 0; i < REQUESTS_NUMBER; i++) {
 				
 			whichRequest = rand.nextInt(4) + 1;
+			if (whichRequest == 1) {
+				whichRequest = 2;
+			} else if (whichRequest == 3) {
+				whichRequest = 4;
+			}
 				
 			switch(whichRequest) {
 				

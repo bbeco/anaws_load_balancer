@@ -85,9 +85,17 @@ public class ReverseProxy extends CoapServer {
             	/* XXX it does not matter which virtual resource type 
             	 * we use for initialization because checkBatteryStatus(), 
             	 * orderDevices() and computeCycle() act on the device list
-            	 * (which is in common)
+            	 * (which is shared)
             	 */
-            	server.acc_res.init();
+            	if (accelerometerDevices > 0) {
+            		server.acc_res.init();
+            	} else if (ledsDevices > 0) {
+            		server.led_res.init();
+            	} else if (toggleDevices > 0) {
+            		server.tog_res.init();
+            	} else if (temperatureDevices > 0) {
+            		server.temp_res.init();
+            	}
             }
             
             // add endpoints
@@ -150,8 +158,7 @@ public class ReverseProxy extends CoapServer {
     	
     	if (!ok) { // no known resource found for this mote
     		System.out.println("Server id " + id + " : No known resources");
-    	}
-    	else{
+    	}else{
     		dev.add(new Device(id, addr, resourceFound));
     	}
     }

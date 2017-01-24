@@ -24,6 +24,11 @@ public class VirtualAccelerometer extends VirtualResource {
         type = "Accelerometer";
     }
     
+    /**
+     * This method is called by 
+     * {@link it.ing.unipi.anaws.virtual_resources.VirtualResource#handleRequest(org.eclipse.californium.core.network.Exchange) handleRequest(Echange)}
+     *  in VirtualResource, so it is synchronized on the shared device list.
+     */
     @Override
     public void handleGET(CoapExchange exchange) {
     	
