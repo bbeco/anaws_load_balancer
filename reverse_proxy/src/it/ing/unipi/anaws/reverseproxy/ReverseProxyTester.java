@@ -10,7 +10,7 @@ import org.eclipse.californium.core.coap.MediaTypeRegistry;
 
 public class ReverseProxyTester {
 	
-	private final static int REQUESTS_NUMBER = 50;
+	private final static int REQUESTS_NUMBER = 46;
 	private static int requests;
 	
 	private static CoapHandler ch = new CoapHandler(){ /* Response Handler */
