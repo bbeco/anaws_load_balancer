@@ -6,7 +6,7 @@ import org.eclipse.californium.core.coap.CoAP.ResponseCode;
 
 public class Battery extends BaseResource {
 	
-	/** This is the path this class is looking for when checking the battery resource */
+	/** This is the path this class is looking for when checking the Battery resource */
 	private static final String batteryResourcePath = "/batt";
 	
 	/** This is the battery charge value.

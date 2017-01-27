@@ -26,7 +26,6 @@ public abstract class VirtualResource extends ConcurrentCoapResource {
     /* Number of served request (for every possible resource).
      * This was made static because it is common to every virtual resource.
      * XXX It must be updated in mutual exclusive access only!
-     * TODO Questa dovrebbe essere rimossa perchè serviva quando avevamo il ciclo.
      */
   	protected static int tot_req;
     
